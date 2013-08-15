@@ -41,6 +41,7 @@ If we didn't want to present login UI, we'd just pass `LoginOptions.NoUI`, and i
 * Athentication with iOS 6 providers with fallback to Safari
 * Support for choosing native Twitter with an action sheet (see sample project)
 * Getting profile for Facebook, Twitter, Google+ and Dropbox
+* Getting access token from Facebook, Twitter ([Reverse Auth](https://dev.twitter.com/docs/ios/using-reverse-auth)) and Google+
 * Getting paginated friends for Facebook, Twitter and Google Plus
 * Sharing support for Facebook, Twitter and Google+
 * Downloading files and thumbnails from Dropbox
