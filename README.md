@@ -10,19 +10,17 @@ Our goal was to have a unified interface to authenticating and calling Facebook,
 ```c#
 static class Services {
     public static readonly FacebookManager Facebook = new FacebookManager (
-        () => new FacebookManager (
-            // First, try native login
-            () => new Facebook6Service {
-                FacebookAppId = "YOUR_APP_ID",
-                Scope = "email"
-            },
-            // Fall back to Safari
-            () => new FacebookService {
-                ClientId = "YOUR_APP_ID",
-                RedirectUrl = new Uri ("fbYOUR_APP_ID://authorize"),
-                Scope = "email"
-            }
-        )
+        // First, try native login
+        () => new Facebook6Service {
+            FacebookAppId = "YOUR_APP_ID",
+            Scope = "email"
+        },
+        // Fall back to Safari
+        () => new FacebookService {
+            ClientId = "YOUR_APP_ID",
+            RedirectUrl = new Uri ("fbYOUR_APP_ID://authorize"),
+            Scope = "email"
+        }
     );
 }
 ```
