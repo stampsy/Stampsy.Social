@@ -1,0 +1,3 @@
+[submodule "libs/Xamarin.Social"]
+	path = libs/Xamarin.Social
+	url = https://github.com/stampsy/Xamarin.Social.git
