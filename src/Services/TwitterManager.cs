@@ -51,10 +51,10 @@ namespace Stampsy.Social.Services
 
         public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
         {
-            return GetFriendsAsync (1000, previous, options);
+            return GetFriendsAsync (100, previous, options);
         }
 
-        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int itemsPerPage = 1000, Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int itemsPerPage = 100, Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
                 () => this.GetFriends (itemsPerPage, previous),
