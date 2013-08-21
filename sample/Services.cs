@@ -32,12 +32,13 @@ namespace Sociopath
         public static readonly Lazy<FacebookManager> _facebook = new Lazy<FacebookManager> (
             () => new FacebookManager (
                 () => new Facebook6Service {
-                    FacebookAppId = "419123104792477",
+
+                    FacebookAppId = "YOUR_APP_ID",
                     Scope = "email"
                 },
                 () => new FacebookService {
-                    ClientId = "419123104792477",
-                    RedirectUrl = new Uri ("fb419123104792477://authorize"),
+                    ClientId = "YOUR_APP_ID",
+                    RedirectUrl = new Uri ("fbYOUR_APP_ID://authorize"),
                     Scope = "email"
                 }
             )
@@ -47,9 +48,9 @@ namespace Sociopath
             () => new TwitterManager (
                 () => new Twitter6Service (),
                 () => new TwitterService {
-                    ConsumerKey = "HXysWWOpI3TdEwdNkrJneQ", 
-                    ConsumerSecret = "D8SJNHbWcC6msiLXvHkwm6sJBo3UzQF9RYTKnD1v7jk", 
-                    CallbackUrl = new Uri ("tw-stampsy://connect")
+                    ConsumerKey = "YOUR_CONSUMER_KEY", 
+                    ConsumerSecret = "YOUR_CONSUMER_SECRET",
+                    CallbackUrl = new Uri ("YOUR_CALLBACK_SCHEME://connect")
                 }
             )
         );
@@ -57,9 +58,9 @@ namespace Sociopath
         public static readonly Lazy<GoogleManager> _google = new Lazy<GoogleManager> (
             () => new GoogleManager (
                 () => new GoogleService {
-                    ClientId = "1032245683715.apps.googleusercontent.com",
-                    ClientSecret = "bieX5mvbe3M002T4uglDriRu",
-                    RedirectUrl = new Uri ("com.stampsy.ipad:/oauth2callback"),
+                    ClientId = "YOUR_CLIENT_ID.apps.googleusercontent.com",
+                    ClientSecret = "YOUR_CLIENT_SECRET",
+                    RedirectUrl = new Uri ("YOUR_BUNDLE_ID:/oauth2callback"),
                     Scope = "https://www.googleapis.com/auth/plus.me"
                 }
             )
@@ -68,14 +69,13 @@ namespace Sociopath
         public static readonly Lazy<DropboxManager> _dropbox = new Lazy<DropboxManager> (
             () => new DropboxManager (
                 () => new DropboxService {
-                    ConsumerKey = "r9fwzeogctrcr0r",
-                    ConsumerSecret = "tgb6kaudi1ul5pl",
-                    CallbackUrl = new Uri ("db-r9fwzeogctrcr0r://1/connect"),
+                    ConsumerKey = "YOUR_CONSUMER_KEY",
+                    ConsumerSecret = "YOUR_CONSUMER_SECRET",
+                    CallbackUrl = new Uri ("YOUR_CALLBACK_SCHEME://1/connect"),
                     Root = "sandbox"
                 }
             )
         );
     }
-
 }
 

@@ -38,6 +38,9 @@ namespace Sociopath
             try {
                 var profile = await Services.Dropbox.GetProfileAsync (options);
                 new UIAlertView ("Profile", profile.ToString (), null, "OK").Show ();
+            } catch (UriFormatException) {
+                new UIAlertView ("Specify your API keys", "Open Services.cs and specify your API keys for each provider.", null, "OK").Show ();
+                return;
             } catch {
                 Console.WriteLine ("Failed to retrieve Dropbox profile. (Maybe we're logged out?)");
                 return;

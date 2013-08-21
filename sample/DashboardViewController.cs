@@ -43,7 +43,12 @@ namespace Sociopath
                 }
             };
 
-            service.GetSessionAsync (LoginOptions.NoUI);
+            try {
+                service.GetSessionAsync (LoginOptions.NoUI);
+            } catch (UriFormatException) {
+                Console.WriteLine ("Open Services.cs and specify your API keys for each provider.");
+                return;
+            }
         }
 
         void UpdateLabel (UIButton button, ServiceManager service)

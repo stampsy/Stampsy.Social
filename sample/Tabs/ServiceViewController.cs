@@ -40,6 +40,9 @@ namespace Sociopath
             try {
                 var profile = await Service.GetProfileAsync (options);
                 new UIAlertView ("Profile", profile.ToString (), null, "OK").Show ();
+            } catch (UriFormatException) {
+                new UIAlertView ("Specify your API keys", "Open Services.cs and specify your API keys for each provider.", null, "OK").Show ();
+                return;
             } catch {
                 Console.WriteLine ("Couldn't retrieve profile for {0}. (Maybe we're logged out?)", Service);
                 return;
