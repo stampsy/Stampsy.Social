@@ -74,7 +74,9 @@ namespace Stampsy.Social.Services
                 new Uri (BaseUri, "friends/list.json"),
                 new Dictionary<string, string> { 
                     { "count", itemsPerPage.ToString () },
-                    { "cursor", (previous != null) ? previous.NextPageToken : "-1" }
+                    { "cursor", (previous != null) ? previous.NextPageToken : "-1" },
+                    { "skip_status", "true" },
+                    { "include_user_entities", "false" }
                 },
                 session.Account
             );
