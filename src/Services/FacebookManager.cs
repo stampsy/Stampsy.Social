@@ -386,19 +386,18 @@ namespace Stampsy.Social.Services
         ApiExceptionKind GetExceptionKind (int facebookErrorCode)
         {
             // https://developers.facebook.com/docs/reference/api/errors/
+
             switch (facebookErrorCode) {
-            
             // OAuth
             case 190: // The access token was invalidated on the device.
             case 102:
             case 2500: // An active access token must be used to query information about the current user.
-
             // Permissions
             case 10:
                 return ApiExceptionKind.Unauthorized;
             default:
-                // The user hasn't authorized the application to perform this action
-                if (facebookErrorCode >= 200 && facebookErrorCode <= 299)
+                // Permissions, again
+                if (facebookErrorCode >= 200 && facebookErrorCode <= 299) // The user hasn't authorized the application to perform this action
                     return ApiExceptionKind.Unauthorized;
 
                 return ApiExceptionKind.Other;
