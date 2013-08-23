@@ -154,16 +154,15 @@ namespace Stampsy.Social.Services
                 }
             }
 
-            return req.GetResponseAsync (token).ContinueWith (reqTask => {
-                var response = reqTask.Result;
-                if (response.StatusCode == HttpStatusCode.Forbidden)
-                    throw new ApiException ("Facebook returned Forbidden.", response, ApiExceptionKind.Forbidden);
+            return ParseAsync (req, ParseShareResult);
+        }
 
-                var content = response.GetResponseText ();
-                if (!content.Contains ("\"id\"")) {
-                    throw new SocialException ("Facebook returned an unrecognized response:\n" + content);
-                }
-            });
+        bool ParseShareResult (JToken json)
+        {
+            if (json.Value<string> ("id") == null)
+                throw new SocialException ("Facebook returned an unrecognized response:\n" + json.ToString ());
+
+            return true;
         }
 
         Task<FacebookLikeInfo> Like (string url, string objectId, CancellationToken token)
@@ -345,20 +344,26 @@ namespace Stampsy.Social.Services
             if (wex == null || wex.Status != WebExceptionStatus.ProtocolError)
                 return;
 
-            var s = wex.Response.GetResponseStream ();
-            using (var jr = new JsonTextReader (new StreamReader (s))) {
+            var response = (HttpWebResponse) wex.Response;
+
+            using (var stream = response.GetResponseStream ())
+            using (var sr = new StreamReader (stream))
+            using (var jr = new JsonTextReader (sr)) {
                 JObject obj = null;
                 try {
                     obj = (JObject) JObject.ReadFrom (jr);
                 } catch {}
 
                 if (obj != null) {
+                    string msg = obj["error"].Value<string> ("message");
                     int code = obj["error"].Value<int> ("code");
-                    string message = obj["error"].Value<string> ("message");
-                    throw new ApiException (message, code, wex, ApiExceptionKind.Other);
+                    var kind = GetExceptionKind (code);
+
+                    throw new ApiException (msg, code, wex, kind);
                 }
             }
-            if (((HttpWebResponse) wex.Response).StatusCode == HttpStatusCode.BadRequest)
+
+            if (response.StatusCode == HttpStatusCode.BadRequest)
                 throw new ApiException ("Unauthorized", wex, ApiExceptionKind.Unauthorized);
         }
 
@@ -373,13 +378,30 @@ namespace Stampsy.Social.Services
 
             var msg = err.Value<string> ("message");
             var code = err.Value<int> ("code");
+            var kind = GetExceptionKind (code);
 
-            switch (code) {
-                case 190: // The access token was invalidated on the device.
-                case 2500: // An active access token must be used to query information about the current user.
-                throw new ApiException (msg, code, response, ApiExceptionKind.Unauthorized);
-                default:
-                throw new ApiException (msg, code, response, ApiExceptionKind.Other);
+            throw new ApiException (msg, code, response, kind);
+        }
+
+        ApiExceptionKind GetExceptionKind (int facebookErrorCode)
+        {
+            // https://developers.facebook.com/docs/reference/api/errors/
+            switch (facebookErrorCode) {
+            
+            // OAuth
+            case 190: // The access token was invalidated on the device.
+            case 102:
+            case 2500: // An active access token must be used to query information about the current user.
+
+            // Permissions
+            case 10:
+                return ApiExceptionKind.Unauthorized;
+            default:
+                // The user hasn't authorized the application to perform this action
+                if (facebookErrorCode >= 200 && facebookErrorCode <= 299)
+                    return ApiExceptionKind.Unauthorized;
+
+                return ApiExceptionKind.Other;
             }
         }
 
