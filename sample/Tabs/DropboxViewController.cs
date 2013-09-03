@@ -66,9 +66,9 @@ namespace Sociopath
             tableView.ReloadData ();
         }
 
-        void OnStateChanged (ServiceState state)
+        void OnStateChanged (SessionState state)
         {
-            if (state == ServiceState.Authenticating)
+            if (state == SessionState.Authenticating)
                 loadingIndicator.StartAnimating ();
             else
                 loadingIndicator.StopAnimating ();

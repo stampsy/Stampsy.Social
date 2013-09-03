@@ -10,5 +10,11 @@ namespace Stampsy.Social
         {
             UIApplication.EnsureUIThread ();
         }
+
+        public static void CheckNotNull (object o, string name)
+        {
+            if (o == null)
+                throw new ArgumentNullException (name);
+        }
     }
 }

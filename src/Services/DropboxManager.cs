@@ -15,11 +15,6 @@ namespace Stampsy.Social
 {
     public class DropboxManager : ServiceManager
     {
-        static DropboxManager ()
-        {
-            AddAotHints ();
-        }
-
         public DropboxManager (params Func<Service> [] fallbackChain)
             : base (fallbackChain)
         {
@@ -175,7 +170,7 @@ namespace Stampsy.Social
             ).ContinueWith (t => {
                 int bytesRead = t.Result;
                 if (bytesRead == 0)
-                    return Task.Factory.FromResult (state.Metadata);
+                    return Task.FromResult (state.Metadata);
 
                 state.BytesLoaded += bytesRead;
 
@@ -307,14 +302,6 @@ namespace Stampsy.Social
             public string Extension {
                 get { return System.IO.Path.GetExtension (Path); }
             }
-        }
-
-        static void AddAotHints ()
-        {
-            try {
-                var tcs = new TaskCompletionSource<Metadata> ();
-                tcs.SetFromTask (null);
-            } catch { }
         }
     }
 }

@@ -15,7 +15,8 @@ namespace Stampsy.Social
                 account = await service.ReauthorizeAsync (account);
                 session = new Session (service, account);
 
-                await manager.SwitchSessionAsync (session, true);
+                manager.CloseSession ();
+                manager.SetSession (session, true);
                 return true;
             } catch {
                 return false;
@@ -50,7 +51,7 @@ namespace Stampsy.Social
 
             bool tryLogout = (ex.Kind == ApiExceptionKind.Unauthorized || ex.Kind == ApiExceptionKind.Forbidden);
             if (tryLogout) {
-                await manager.CloseSessionAsync ();
+                manager.CloseSession ();
                 return await WithSession (manager, call, scope, options, false);
             }
 

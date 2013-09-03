@@ -28,7 +28,7 @@ namespace Sociopath
                 GetProfileAndFriendsAsync (LoginOptions.NoUI);
         }
 
-        protected virtual void OnStateChanged (ServiceState state)
+        protected virtual void OnStateChanged (SessionState state)
         {
         }
 

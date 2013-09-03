@@ -44,7 +44,6 @@
     <Compile Include="Session.cs" />
     <Compile Include="ApiException.cs" />
     <Compile Include="ApiExceptionKind.cs" />
-    <Compile Include="ServiceState.cs" />
     <Compile Include="Services\FacebookManager.cs" />
     <Compile Include="Services\GoogleManager.cs" />
     <Compile Include="Services\TwitterManager.cs" />
@@ -53,8 +52,6 @@
     <Compile Include="IChoiceProvider.cs" />
     <Compile Include="Providers\ISessionProvider.cs" />
     <Compile Include="Providers\FallbackSessionProvider.cs" />
-    <Compile Include="Extensions\TaskCompletionSourceExtensions.cs" />
-    <Compile Include="Extensions\TaskFactoryExceptions.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="SessionManager.cs" />
     <Compile Include="SessionManagerExtensions.cs" />
@@ -65,6 +62,7 @@
     <Compile Include="LoginProgress.cs" />
     <Compile Include="OfflineException.cs" />
     <Compile Include="INetworkMonitor.cs" />
+    <Compile Include="SessionState.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />

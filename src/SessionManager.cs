@@ -30,45 +30,41 @@ namespace Stampsy.Social
         }
 
 
-        private ISessionProvider _provider;
-        private Task<Session> _task;
-
-        public EventHandler StateChanged;
-
-        public SessionManager (params Func<Service> [] fallbackChain)
-        {
-            _provider = new FallbackSessionProvider (fallbackChain);
-        }
-
-        public bool IsLoggedIn {
-            get { return State == ServiceState.LoggedIn; }
-        }
-
-        public bool IsAuthenticating {
-            get { return State == ServiceState.Authenticating; }
-        }
-
-        public bool IsLoggedOut {
-            get { return State == ServiceState.LoggedOut; }
-        }
-
-        public ServiceState State {
+        public SessionState State {
             get {
                 var t = _task;
 
                 if (t == null)
-                    return ServiceState.LoggedOut;
+                    return SessionState.LoggedOut;
 
                 switch (t.Status) {
-                    case TaskStatus.RanToCompletion:
-                    return ServiceState.LoggedIn;
-                    case TaskStatus.Canceled:
-                    case TaskStatus.Faulted:
-                    return ServiceState.LoggedOut;
-                    default:
-                    return ServiceState.Authenticating;
+                case TaskStatus.RanToCompletion:
+                    return SessionState.LoggedIn;
+                case TaskStatus.Canceled:
+                case TaskStatus.Faulted:
+                    return SessionState.LoggedOut;
+                default:
+                    return SessionState.Authenticating;
                 }
             }
+        }
+
+        private Task<Session> _task;
+        private CancellationTokenSource _openSessionCts;
+        private ISessionProvider _provider;
+
+        public EventHandler StateChanged;
+
+        public bool IsLoggedIn {
+            get { return State == SessionState.LoggedIn; }
+        }
+
+        public bool IsAuthenticating {
+            get { return State == SessionState.Authenticating; }
+        }
+
+        public bool IsLoggedOut {
+            get { return State == SessionState.LoggedOut; }
         }
 
         public Session ActiveSession {
@@ -82,25 +78,16 @@ namespace Stampsy.Social
             }
         }
 
-        public Task<Session> GetSessionAsync (LoginOptions options, string [] scope = null)
+        public SessionManager (params Func<Service> [] fallbackChain)
         {
-            return GetSessionAsync (() => _provider.Login (options, scope));
+            _provider = new FallbackSessionProvider (fallbackChain);
         }
 
-        Task<Session> GetSessionAsync (Func<Task<Session>> sessionFactory)
+        public Task<Session> GetSessionAsync (LoginOptions options, string [] scope = null)
         {
-            Utils.EnsureMainThread ();
-
-            if (IsLoggedOut) {
-                _task = sessionFactory ();
-                _task.ContinueWith (t => {
-                    OnStateChanged ();
-                }, TaskScheduler.FromCurrentSynchronizationContext ());
-
-                OnStateChanged ();
-            }
-
-            return _task;
+            return GetSessionAsync ((token) =>
+                _provider.Login (options, scope, token)
+            );
         }
 
         public void CloseSession ()
@@ -110,36 +97,60 @@ namespace Stampsy.Social
             if (IsLoggedOut)
                 return;
 
-            if (IsAuthenticating)
-                throw new InvalidOperationException ("Attempted to close session while authenticating. Use CloseSessionAsync to handle all cases.");
-
-            TryDeleteActiveSessionAccount ();
+            if (IsLoggedIn) {
+                TryDeleteAccount (ActiveSession);
+            } else if (IsAuthenticating) {
+                _openSessionCts.Cancel (); /* Created by OpenSessionAsync */
+                _openSessionCts.Dispose ();
+                _openSessionCts = null;
+            }
 
             _task = null;
             OnStateChanged ();
         }
 
-        void TryDeleteActiveSessionAccount ()
+        internal void SetSession (Session session, bool saveAccount)
         {
-            var active = ActiveSession;
-            try {
-                active.Service.DeleteAccount (active.Account);
-            } catch {
-                // Account doesn't exist, or operation isn't supported by service
+            Utils.EnsureMainThread ();
+
+            if (session == null)
+                throw new ArgumentNullException ("session");
+
+            CloseSession ();
+
+            if (saveAccount && session.Service.SupportsSave)
+                session.Service.SaveAccount (session.Account);
+
+            GetSessionAsync (_ => Task.FromResult (session));
+        }
+
+        Task<Session> GetSessionAsync (Func<CancellationToken, Task<Session>> sessionFactory)
+        {
+            Utils.EnsureMainThread ();
+
+            if (IsLoggedOut) {
+                _openSessionCts = new CancellationTokenSource (); /* Invalidated by CloseSession */
+
+                _task = OpenSessionAsync (sessionFactory, _openSessionCts.Token);
+                OnStateChanged ();
+
+                _task.ContinueWith (t => {
+                    OnStateChanged ();
+                }, TaskScheduler.FromCurrentSynchronizationContext ());
             }
+
+            return _task;
         }
 
-        public Task CloseSessionAsync ()
+        async Task<Session> OpenSessionAsync (Func<CancellationToken, Task<Session>> sessionFactory, CancellationToken token)
         {
-            return GetSessionAsync (LoginOptions.NoUI).ContinueWith (t => {
-                CloseSession ();
-            }, TaskScheduler.FromCurrentSynchronizationContext ());
-        }
+            Session session = await sessionFactory (token);
 
-        protected virtual void OnStateChanged ()
-        {
-            if (StateChanged != null)
-                StateChanged (this, EventArgs.Empty);
+            if (token.IsCancellationRequested)
+                TryDeleteAccount (session);
+
+            token.ThrowIfCancellationRequested ();
+            return session;
         }
 
         protected Session EnsureLoggedIn ()
@@ -150,30 +161,21 @@ namespace Stampsy.Social
             return ActiveSession;
         }
 
-        public Task SwitchSessionAsync (Session newSession, bool saveAccount)
+        protected virtual void OnStateChanged ()
         {
-            return CloseSessionAsync ().ContinueWith (_ => {
-                OpenSession (newSession, saveAccount);
-            }, TaskScheduler.FromCurrentSynchronizationContext ());
+            SynchronizationContext.Current.Post (_ => {
+                if (StateChanged != null)
+                    StateChanged (this, EventArgs.Empty);
+            }, null);
         }
 
-        void OpenSession (Session session, bool saveAccount)
+        static void TryDeleteAccount (Session session)
         {
-            Utils.EnsureMainThread ();
-
-            if (session == null)
-                throw new ArgumentNullException ("session");
-
-            if (!IsLoggedOut)
-                throw new InvalidOperationException ("Another session is already open.");
-
-            var tcs = new TaskCompletionSource<Session> ();
-            tcs.SetResult (session);
-
-            if (saveAccount && session.Service.SupportsSave)
-                session.Service.SaveAccount (session.Account);
-
-            GetSessionAsync (() => tcs.Task);
+            try {
+                session.Service.DeleteAccount (session.Account);
+            } catch {
+                // Account doesn't exist, or operation isn't supported by service
+            }
         }
     }
 }

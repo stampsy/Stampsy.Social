@@ -2,7 +2,7 @@ using System;
 
 namespace Stampsy.Social
 {
-    public enum ServiceState
+    public enum SessionState
     {
         LoggedOut,
         Authenticating,

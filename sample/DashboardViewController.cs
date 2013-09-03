@@ -32,11 +32,12 @@ namespace Sociopath
 
             button.TouchUpInside += (sender, e) => {
                 switch (service.State) {
-                case ServiceState.LoggedIn:
+                case SessionState.LoggedIn:
+                case SessionState.Authenticating:
                     service.CloseSession ();
                     service.DeleteStoredAccounts ();
                     break;
-                case ServiceState.LoggedOut:
+                case SessionState.LoggedOut:
                     var choiceUI = new ActionSheetChoiceProvider<Account> (button.Frame, View);
                     service.GetSessionAsync (LoginOptions.WithUIAndChoice (choiceUI, presentAuthController: presentAuthController));
                     break;
@@ -54,19 +55,18 @@ namespace Sociopath
         void UpdateLabel (UIButton button, ServiceManager service)
         {
             var state = service.State;
-            button.Enabled = (state != ServiceState.Authenticating);
 
             switch (state) {
-            case ServiceState.LoggedIn:
+            case SessionState.LoggedIn:
                 var acc = service.ActiveSession.Account;
                 button.SetTitle (string.Format ("Log out from {0}", acc.Username), UIControlState.Normal);
                 break;
 
-            case ServiceState.Authenticating:
+            case SessionState.Authenticating:
                 button.SetTitle ("Logging in", UIControlState.Normal);
                 break;
 
-            case ServiceState.LoggedOut:
+            case SessionState.LoggedOut:
                 button.SetTitle ("Log in", UIControlState.Normal);
                 break;
             }

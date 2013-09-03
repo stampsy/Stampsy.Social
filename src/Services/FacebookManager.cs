@@ -221,7 +221,7 @@ namespace Stampsy.Social.Services
                     return GetGraphObjectId (url, token, true);
                 }
 
-                return Task.Factory.FromResult (t.Result.Value<string> ("id"));
+                return Task.FromResult (t.Result.Value<string> ("id"));
             }).Unwrap ();
         }
 

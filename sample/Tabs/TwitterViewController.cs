@@ -33,9 +33,9 @@ namespace Sociopath
                 );
         }
 
-        protected override void OnStateChanged (ServiceState state)
+        protected override void OnStateChanged (SessionState state)
         {
-            if (state == ServiceState.Authenticating)
+            if (state == SessionState.Authenticating)
                 loadingIndicator.StartAnimating ();
             else
                 loadingIndicator.StopAnimating ();

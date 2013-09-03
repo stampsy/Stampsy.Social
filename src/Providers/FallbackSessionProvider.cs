@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
 using Xamarin.Social;
@@ -22,7 +23,7 @@ namespace Stampsy.Social.Providers
             _fallbackChain = fallbackChain;
         }
 
-        public async Task<Session> Login (LoginOptions options, string [] scope)
+        public async Task<Session> Login (LoginOptions options, string [] scope, CancellationToken token)
         {
             List<AccountProvider> providers = GetProviderChain (options, scope).ToList ();
             options.TryReportProgress (LoginProgress.Authorizing);
