@@ -28,13 +28,15 @@ static class Services {
 We also wanted the consuming code to not have to think about authentication:
 
 ```c#
-var profile = await Services.Facebook.GetProfileAsync (LoginOptions.WithUI);
+var profile = await Services.Facebook.GetProfileAsync (options: LoginOptions.WithUI);
 Console.WriteLine (profile.Name);
 ```
 
 If the user is not authenticated, this will either present native dialog, or open Safari. When (and if) user authenticates, it will then get profile using Open Graph API and parse it into a C# object.
 
 If we didn't want to present login UI, we'd just pass `LoginOptions.NoUI`, and if the user is logged out, the call would fail silently.
+
+We're using this in production in Stampsy 1.5 (soon to appear in App Store).
 
 ### Features
 
@@ -46,17 +48,15 @@ If we didn't want to present login UI, we'd just pass `LoginOptions.NoUI`, and i
 * Sharing support for Facebook, Twitter and Google+
 * Downloading files and thumbnails from Dropbox
 * Similarly to Facebook SDK, client code just passes a parameter whether login UI can be displayed during an API call
-* All calls return `Task`s
-* Most calls can be cancelled
+* All calls return `Task`s and support cancellations
 
 Open `sample/Sociopath.sln` to see how it works.  
 (Don't forget to put your API keys in `sample/Services.cs`.)
 
 ### Shortcomings
 
-* Can't log out while trying to authenticate, you have to wait
-* No cancellation support for authentication yet
 * This README is the only planned documentation
+* No unit tests (yet?)
 
 ### Cloning the Repo
 
