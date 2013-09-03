@@ -16,164 +16,101 @@ namespace Stampsy.Social.Providers
 
         public FallbackSessionProvider (params Func<Service> [] fallbackChain)
         {
+            if (fallbackChain.Length == 0)
+                throw new ArgumentOutOfRangeException ("fallbackChain", "Fallback chain is empty.");
+
             _fallbackChain = fallbackChain;
         }
 
-        public Task<Session> Login (LoginOptions options, string [] scope = null)
+        public async Task<Session> Login (LoginOptions options, string [] scope)
         {
-            var chain = GetProviderChain (options, scope);
-
-            if (chain.Count == 0)
-                throw new InvalidOperationException ("Fallback chain for has no elements.");
-
+            List<AccountProvider> providers = GetProviderChain (options, scope).ToList ();
             options.TryReportProgress (LoginProgress.Authorizing);
-            return Login (chain.First, options, scope);
-        }
 
-        Task<Session> Login (LinkedListNode<AccountProvider> currentProvider, LoginOptions options, string [] scope)
-        {
-            if (!SessionManager.NetworkMonitor.IsNetworkAvailable)
-                return Task.Factory.FromException<Session> (new OfflineException ());
+            var providerExceptions = new List<Exception> ();
 
-            var provider = currentProvider.Value;
-            var tcs = new TaskCompletionSource<Session> ();
+            // Try each provider in turn
 
-            // Introduce a helper to set task result from 
-            // recursively calling this function with next provider:
+            foreach (var pi in providers.Select ((p, i) => new { Provider = p, Index = i })) {
+                bool isLast = (pi.Index == providers.Count - 1);
+                AccountProvider provider = pi.Provider;
 
-            Func<bool> loginWithNextProvider = () => {
-                var nextProvider = currentProvider.Next;
-                if (nextProvider == null)
-                    return false;
+                if (!SessionManager.NetworkMonitor.IsNetworkAvailable)
+                    throw new OfflineException ();
 
-                Login (nextProvider, options, scope).ContinueWith (
-                    tcs.SetFromTask
-                );
+                try {
+                    List<Account> accounts = null;
 
-                return true;
-            };
+                    // Now, let's get accounts for current provider.
+                    // For different services and login methods, this may launch Safari, show iOS 6 prompt or just query ACAccounts.
 
-            // Introduce a helper to complete current task with an account,
-            // falling back to the next provider if verification fails:
-
-            Action<Account> loginWithCurrentProvider = (acc) => {
-                var service = provider.Service;
-                var session = new Session (service, acc);
-
-                if (!service.SupportsVerification) {
-                    tcs.SetResult (session);
-                    return;
-                }
-
-                var verifyTask = service.VerifyAsync (acc);
-
-                // In case of success, return session
-                verifyTask.ContinueWith (
-                    t => tcs.SetResult (session),
-                    TaskContinuationOptions.OnlyOnRanToCompletion
-                );
-
-                // In case of failure, try next provider
-                verifyTask.ContinueWith (t => {
-                    if (!loginWithNextProvider ())
-                        tcs.SetException (new Exception ("Account verification failed, and there was no fallback account."));
-                }, TaskContinuationOptions.NotOnRanToCompletion);
-            };
-
-
-            // Now, let's get accounts for current provider.
-            // For different services and login methods, this may launch Safari, show iOS 6 prompt or just query ACAccounts.
-
-            options.TryReportProgress (provider.ProgressWhileAuthenticating);
-            provider.GetAccounts ().ContinueWith (t => {
-                options.TryReportProgress (LoginProgress.Authorizing);
-
-                // If we couldn't retrieve accounts, use next fallback in chain.
-                // If there is no fallback, complete current task with the same status (Faulted or Canceled).
-
-                if (t.IsCanceled || t.IsFaulted) {
-                    if (!loginWithNextProvider ())
-                        tcs.SetFromTask (t);
-
-                    return;
-                }
-
-
-                var accs = t.Result.ToArray ();
-
-                // If there is an empty list of accounts, use next fallback in chain.
-                // If there is no fallback, fail current task with an exception.
-
-                if (accs.Length == 0) {
-                    if (!loginWithNextProvider ())
-                        tcs.SetException (new Exception ("No accounts found for this service."));
-
-                    return;
-                }
-
-
-                // If there is just one account, sweet!
-                // Complete current task with this account.
-
-                if (accs.Length == 1) {
-                    loginWithCurrentProvider (accs [0]);
-                    return;
-                }
-
-
-                // If there is more than a single account, present an interface to choose one.
-                // If fallback is available, add it to the list of options with null value.
-
-                if (options.AccountChoiceProvider == null) {
-                    tcs.SetException (new InvalidOperationException ("There is more than one account, but no accountChoiceProvider was specified."));
-                    return;
-                }
-
-                var accOptions = accs.ToList ();
-
-                if (currentProvider.Next != null)
-                    accOptions.Add (null);
-
-                Func<Account, string> titleForButton = (acc) => (acc != null) ? acc.Username : "Other";
-
-                options.TryReportProgress (LoginProgress.PresentingAccountChoice);
-
-                options.AccountChoiceProvider
-                    .ChooseAsync (accOptions, titleForButton)
-                    .ContinueWith (ct => {
-
-                    options.TryReportProgress (LoginProgress.Authorizing);
-
-                    // If the user didn't choose the account (e.g. by dismissing the popover),
-                    // set current task as cancelled by user.
-
-                    if (ct.IsCanceled || ct.IsFaulted) {
-                        tcs.SetFromTask (ct);
-                        return;
+                    options.TryReportProgress (provider.ProgressWhileAuthenticating);
+                    try {
+                        accounts = (await provider.GetAccounts ()).ToList ();
+                    } finally {
+                        options.TryReportProgress (LoginProgress.Authorizing);
                     }
 
-                    var acc = ct.Result;
+                    Account account = null;
 
-                    // If the user has chosen an account from list, use it for our result
+                    if (accounts.Count == 0) {
+                        throw new InvalidOperationException ("No accounts found for this service.");
+                    } else if (accounts.Count == 1) {
+                        account = accounts [0];
+                    } else {
+                        // If there is more than a single account, present an interface to choose one.
+                        // If fallback is available, add it to the list of options with null value.
 
-                    if (acc != null) {
-                        loginWithCurrentProvider (acc);
-                        return;
+                        var choiceUI = options.AccountChoiceProvider;
+                        if (choiceUI == null)
+                            throw new InvalidOperationException ("There is more than one account, but no accountChoiceProvider was specified.");
+
+                        // Add "Other" option that will just fall back to next provider
+                        if (!isLast)
+                            accounts.Add (null);
+
+                        // Show chooser interface
+                        options.TryReportProgress (LoginProgress.PresentingAccountChoice);
+                        try {
+                            account = await choiceUI.ChooseAsync (accounts, (a) => (a != null) ? a.Username : "Other");
+                        } finally {
+                            options.TryReportProgress (LoginProgress.Authorizing);
+                        }
+
+                        // If the user has chosen "Other" option, fall back to next provider
+                        if (account == null)
+                            continue;
                     }
 
-                    // If the user has chosen "Other" option, use next fallback in chain.
-                    loginWithNextProvider ();
+                    var service = provider.Service;
+                    var session = new Session (service, account);
 
-                });
-            }, TaskScheduler.FromCurrentSynchronizationContext ());
+                    if (service.SupportsVerification) {
+                        // For services that support verification, do it now
+                        try {
+                            await service.VerifyAsync (account);
+                        } catch (Exception ex) {
+                            throw new InvalidOperationException ("Account verification failed.", ex);
+                        }
+                    }
 
-            return tcs.Task;
+                    // OK
+                    return session;
+
+                } catch (TaskCanceledException) {
+                    throw;
+                } catch (Exception ex) {
+                    // Whenever authorization fails, store the exception.
+                    // If neither provider works, we'll throw an aggregate exception with this list.
+                    providerExceptions.Add (ex);
+                }
+            }
+
+            throw new AggregateException ("Could not obtain session via either provider", providerExceptions);
         }
 
-        LinkedList<AccountProvider> GetProviderChain (LoginOptions options, string [] scope)
+        IEnumerable<AccountProvider> GetProviderChain (LoginOptions options, string [] scope)
         {
-            var list = new LinkedList<AccountProvider> ();
-
             foreach (var serviceFactory in _fallbackChain) {
                 var service = serviceFactory ();
 
@@ -185,17 +122,15 @@ namespace Stampsy.Social.Providers
                 if (system != null)
                     system.AllowLoginUI = options.AllowLoginUI;
 
-                list.AddLast (new AccountProvider (service, false));
+                yield return new AccountProvider (service, false);
 
                 if (options.AllowLoginUI && service.SupportsAuthentication) {
                     if (options.PresentAuthController != null)
-                        list.AddLast (new AccountProvider (service, options.PresentAuthController));
+                        yield return new AccountProvider (service, options.PresentAuthController);
                     else
-                        list.AddLast (new AccountProvider (service, true));
+                        yield return new AccountProvider (service, true);
                 }
             }
-
-            return list;
         }
 
         class AccountProvider
