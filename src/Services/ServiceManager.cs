@@ -33,15 +33,16 @@ namespace Stampsy.Social
 
         #region Public API
 
-        public abstract Task<ServiceUser> GetProfileAsync (LoginOptions options = default (LoginOptions));
+        public abstract Task<ServiceUser> GetProfileAsync (CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions));
         public abstract Task ShareAsync (Item item, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions));
-        public abstract Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions));
+        public abstract Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions));
 
-        public virtual Task<IDictionary<string, string>> GetTokenDataAsync (LoginOptions options = default (LoginOptions))
+        public virtual Task<IDictionary<string, string>> GetTokenDataAsync (CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetTokenData (),
-                options
+                () => this.GetTokenData (token),
+                options,
+                token
             );
         }
 
@@ -49,10 +50,10 @@ namespace Stampsy.Social
 
         #region Implementation
 
-        protected virtual Task<IDictionary<string, string>> GetTokenData ()
+        protected virtual Task<IDictionary<string, string>> GetTokenData (CancellationToken token)
         {
             var session = EnsureLoggedIn ();
-            return session.Service.GetAccessTokenAsync (session.Account);
+            return session.Service.GetAccessTokenAsync (session.Account, token);
         }
 
         #endregion
@@ -75,7 +76,7 @@ namespace Stampsy.Social
             return null;
         }
 
-        protected Task<T> ParseAsync<T> (Request request, Func<JToken, T> parseJson, CancellationToken token = default (CancellationToken))
+        protected Task<T> ParseAsync<T> (Request request, Func<JToken, T> parseJson, CancellationToken token)
         {
             return request.GetResponseAsync (token).ContinueWith ((responseTask) => {
                 var json = GetResponseJson (responseTask);
@@ -118,14 +119,14 @@ namespace Stampsy.Social
 
         #region Pagination
 
-        protected virtual Task<Page<T>> ParsePageAsync<T> (Request request, Func<JToken, T> parseJson)
+        protected virtual Task<Page<T>> ParsePageAsync<T> (Request request, Func<JToken, T> parseJson, CancellationToken token)
         {
-            return request.GetResponseAsync ().ContinueWith ((responseTask) => {
+            return request.GetResponseAsync (token).ContinueWith ((responseTask) => {
                 var json = GetResponseJson (responseTask);
-                var token = ParsePageToken (json);
+                var pageToken = ParsePageToken (json);
 
-                return new Page<T> (parseJson (json), token);
-            }, TaskScheduler.Default);
+                return new Page<T> (parseJson (json), pageToken);
+            }, token, TaskContinuationOptions.None, TaskScheduler.Default);
         }
 
         protected virtual string ParsePageToken (JToken json)

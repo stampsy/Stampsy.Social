@@ -36,11 +36,12 @@ namespace Stampsy.Social.Services
 
         #region Public API
 
-        public override Task<ServiceUser> GetProfileAsync (LoginOptions options = default (LoginOptions))
+        public override Task<ServiceUser> GetProfileAsync (CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetProfile (),
+                () => this.GetProfile (token),
                 options,
+                token,
                 new [] { "email" }
             );
         }
@@ -50,20 +51,22 @@ namespace Stampsy.Social.Services
             return this.WithSession (
                 () => this.Share (item, token),
                 options,
+                token,
                 new [] { "publish_actions" }
             );
         }
 
-        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
-            return GetFriendsAsync (100, previous, options);
+            return GetFriendsAsync (100, previous, token, options);
         }
 
-        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int count = 100, Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int count = 100, Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetFriends (count, previous),
+                () => this.GetFriends (count, previous, token),
                 options,
+                token,
                 new [] { "email" }
             );
         }
@@ -73,6 +76,7 @@ namespace Stampsy.Social.Services
             return this.WithSession (
                 () => this.Like (url, objectId, token),
                 options,
+                token,
                 new [] { "publish_actions" }
             );
         }
@@ -82,6 +86,7 @@ namespace Stampsy.Social.Services
             return this.WithSession (
                 () => this.Unlike (url, likeId, token),
                 options,
+                token,
                 new [] { "publish_actions" }
             );
         }
@@ -91,6 +96,7 @@ namespace Stampsy.Social.Services
             return this.WithSession (
                 () => this.GetLikeInfo (url, token),
                 options,
+                token,
                 new [] { "publish_actions" }
             );
         }
@@ -99,7 +105,7 @@ namespace Stampsy.Social.Services
 
         #region Implementation
 
-        Task<Page<IEnumerable<ServiceUser>>> GetFriends (int count, Page<IEnumerable<ServiceUser>> previous)
+        Task<Page<IEnumerable<ServiceUser>>> GetFriends (int count, Page<IEnumerable<ServiceUser>> previous, CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var pageUrl = (previous != null) ? previous.NextPageToken : null;
@@ -113,11 +119,12 @@ namespace Stampsy.Social.Services
 
             return ParsePageAsync (
                 request,
-                (json) => json ["data"].Children<JObject> ().Select (ParseUser)
+                (json) => json ["data"].Children<JObject> ().Select (ParseUser),
+                token
             );
         }
 
-        Task<ServiceUser> GetProfile ()
+        Task<ServiceUser> GetProfile (CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var request = session.Service.CreateRequest (
@@ -126,7 +133,7 @@ namespace Stampsy.Social.Services
                 session.Account
             );
 
-            return ParseAsync (request, ParseUser);
+            return ParseAsync (request, ParseUser, token);
         }
 
         Task Share (Item item, CancellationToken token)
@@ -154,7 +161,7 @@ namespace Stampsy.Social.Services
                 }
             }
 
-            return ParseAsync (req, ParseShareResult);
+            return ParseAsync (req, ParseShareResult, token);
         }
 
         bool ParseShareResult (JToken json)
@@ -224,7 +231,6 @@ namespace Stampsy.Social.Services
                 return Task.FromResult (t.Result.Value<string> ("id"));
             }).Unwrap ();
         }
-
 
         Task Unlike (string url, string likeId, CancellationToken token)
         {

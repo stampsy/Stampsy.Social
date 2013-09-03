@@ -38,7 +38,7 @@ namespace Sociopath
             TableView.ReloadData ();
 
             try {
-                var profile = await Service.GetProfileAsync (options);
+                var profile = await Service.GetProfileAsync (options: options);
                 new UIAlertView ("Profile", profile.ToString (), null, "OK").Show ();
             } catch (UriFormatException) {
                 new UIAlertView ("Specify your API keys", "Open Services.cs and specify your API keys for each provider.", null, "OK").Show ();

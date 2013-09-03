@@ -33,11 +33,12 @@ namespace Stampsy.Social.Services
 
         #region Public API
 
-        public override Task<ServiceUser> GetProfileAsync (LoginOptions options = default (LoginOptions))
+        public override Task<ServiceUser> GetProfileAsync (CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetProfile (),
-                options
+                () => this.GetProfile (token),
+                options,
+                token
             );
         }
 
@@ -45,20 +46,22 @@ namespace Stampsy.Social.Services
         {
             return this.WithSession (
                 () => this.Share (item, token),
-                options
+                options,
+                token
             );
         }
 
-        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
-            return GetFriendsAsync (100, previous, options);
+            return GetFriendsAsync (100, previous, token, options);
         }
 
-        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int itemsPerPage = 100, Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int itemsPerPage = 100, Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetFriends (itemsPerPage, previous),
-                options
+                () => this.GetFriends (itemsPerPage, previous, token),
+                options,
+                token
             );
         }
 
@@ -66,7 +69,7 @@ namespace Stampsy.Social.Services
 
         #region Implementation
 
-        Task<Page<IEnumerable<ServiceUser>>> GetFriends (int itemsPerPage, Page<IEnumerable<ServiceUser>> previous)
+        Task<Page<IEnumerable<ServiceUser>>> GetFriends (int itemsPerPage, Page<IEnumerable<ServiceUser>> previous, CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var request = session.Service.CreateRequest (
@@ -82,11 +85,12 @@ namespace Stampsy.Social.Services
             );
 
             return ParsePageAsync (request,
-                (json) => json ["users"].Children<JObject> ().Select (ParseUser)
+                (json) => json ["users"].Children<JObject> ().Select (ParseUser),
+                token
             );
         }
 
-        Task<ServiceUser> GetProfile ()
+        Task<ServiceUser> GetProfile (CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var request = session.Service.CreateRequest (
@@ -96,7 +100,7 @@ namespace Stampsy.Social.Services
                 session.Account
             );
 
-            return ParseAsync (request, ParseProfile);
+            return ParseAsync (request, ParseProfile, token);
         }
 
         Task Share (Item item, CancellationToken token)

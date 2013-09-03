@@ -40,7 +40,8 @@ namespace Stampsy.Social
         {
             return this.WithSession (
                 () => this.GetMetadata (path, includeContent, hash, token),
-                options
+                options,
+                token
             );
         }
 
@@ -48,7 +49,8 @@ namespace Stampsy.Social
         {
             return this.WithSession (
                 () => this.LoadThumbnail (path, size, destPath, token),
-                options
+                options,
+                token
             );
         }
 
@@ -56,24 +58,26 @@ namespace Stampsy.Social
         {
             return this.WithSession (
                 () => this.LoadFile (path, destPath, progress, token),
-                options
+                options,
+                token
             );
         }
 
-        public override Task<ServiceUser> GetProfileAsync (LoginOptions options = default (LoginOptions))
+        public override Task<ServiceUser> GetProfileAsync (CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetProfile (),
-                options
+                () => this.GetProfile (token),
+                options,
+                token
             );
         }
 
-        public override Task ShareAsync (Item item, CancellationToken token = default(CancellationToken), LoginOptions options = default(LoginOptions))
+        public override Task ShareAsync (Item item, CancellationToken token = default(CancellationToken), LoginOptions options = default (LoginOptions))
         {
             throw new NotImplementedException ();
         }
 
-        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default(LoginOptions))
+        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             throw new NotImplementedException ();
         }
@@ -206,14 +210,14 @@ namespace Stampsy.Social
             #pragma warning restore 612, 618
         }
 
-        Task<ServiceUser> GetProfile ()
+        Task<ServiceUser> GetProfile (CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var request = session.Service.CreateRequest (
                 "GET", new Uri (BaseApiUri, "account/info"), session.Account
             );
 
-            return ParseAsync (request, ParseUser);
+            return ParseAsync (request, ParseUser, token);
         }
 
         #endregion

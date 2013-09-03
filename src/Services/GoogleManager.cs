@@ -39,11 +39,12 @@ namespace Stampsy.Social.Services
 
         #region Public API
 
-        public override Task<ServiceUser> GetProfileAsync (LoginOptions options = default (LoginOptions))
+        public override Task<ServiceUser> GetProfileAsync (CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetProfile (),
+                () => this.GetProfile (token),
                 options,
+                token,
                 new [] {
                     UserinfoEmailScopeKey,
                     PlusMeScopeKey
@@ -56,16 +57,17 @@ namespace Stampsy.Social.Services
             throw new NotImplementedException ();
         }
 
-        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public override Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
-            return this.GetFriendsAsync (100, "best", previous, options);
+            return this.GetFriendsAsync (100, "best", previous, token, options);
         }
 
-        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int itemsPerPage = 100, string orderBy = "best", Page<IEnumerable<ServiceUser>> previous = null, LoginOptions options = default (LoginOptions))
+        public Task<Page<IEnumerable<ServiceUser>>> GetFriendsAsync (int itemsPerPage = 100, string orderBy = "best", Page<IEnumerable<ServiceUser>> previous = null, CancellationToken token = default (CancellationToken), LoginOptions options = default (LoginOptions))
         {
             return this.WithSession (
-                () => this.GetPeople (itemsPerPage, orderBy, previous),
+                () => this.GetPeople (itemsPerPage, orderBy, previous, token),
                 options,
+                token,
                 new [] { PlusLoginScopeKey }
             );
         }
@@ -74,7 +76,7 @@ namespace Stampsy.Social.Services
 
         #region Implementation
 
-        Task<Page<IEnumerable<ServiceUser>>> GetPeople (int itemsPerPage, string orderBy, Page<IEnumerable<ServiceUser>> previous)
+        Task<Page<IEnumerable<ServiceUser>>> GetPeople (int itemsPerPage, string orderBy, Page<IEnumerable<ServiceUser>> previous, CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var uri = new Uri (BaseApiUri, "people/me/people/visible");
@@ -90,15 +92,16 @@ namespace Stampsy.Social.Services
 
             var request = session.Service.CreateRequest ("GET", uri, args, session.Account);
             return ParsePageAsync (request,
-                (json) => json ["items"].Children<JObject> ().Select (ParseUser)
+                (json) => json ["items"].Children<JObject> ().Select (ParseUser),
+                token
             );
         }
 
-        Task<ServiceUser> GetProfile ()
+        Task<ServiceUser> GetProfile (CancellationToken token)
         {
             return Task.Factory.ContinueWhenAll<ServiceUser> (new Task<ServiceUser> [] {
-                GetGooglePlusProfile (),
-                GetOAuthProfile ()
+                GetGooglePlusProfile (token),
+                GetOAuthProfile (token)
             }, (ts) => {
                 var plusProfile = ((Task<ServiceUser>) ts [0]).Result;
                 var oauthProfile = ((Task<ServiceUser>) ts [1]).Result;
@@ -113,10 +116,10 @@ namespace Stampsy.Social.Services
                     Name = plusProfile.Name,
                     Nickname = plusProfile.Nickname
                 };
-            });
+            }, token);
         }
 
-        Task<ServiceUser> GetGooglePlusProfile ()
+        Task<ServiceUser> GetGooglePlusProfile (CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var request = session.Service.CreateRequest (
@@ -125,10 +128,10 @@ namespace Stampsy.Social.Services
                 session.Account
             );
 
-            return ParseAsync (request, ParseProfile);
+            return ParseAsync (request, ParseProfile, token);
         }
 
-        Task<ServiceUser> GetOAuthProfile ()
+        Task<ServiceUser> GetOAuthProfile (CancellationToken token)
         {
             var session = EnsureLoggedIn ();
             var request = session.Service.CreateRequest (
@@ -137,7 +140,7 @@ namespace Stampsy.Social.Services
                 session.Account
             );
 
-            return ParseAsync (request, ParseProfile);
+            return ParseAsync (request, ParseProfile, token);
         }
 
         #endregion

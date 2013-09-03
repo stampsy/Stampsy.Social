@@ -35,8 +35,10 @@ namespace Stampsy.Social.Providers
                 bool isLast = (pi.Index == providers.Count - 1);
                 AccountProvider provider = pi.Provider;
 
+                token.ThrowIfCancellationRequested ();
+
                 try {
-                    return await GetSession (provider, isLast, options);
+                    return await GetSession (provider, isLast, options, token);
                 } catch (TaskCanceledException) {
                     throw;
                 } catch (Exception ex) {
@@ -48,7 +50,7 @@ namespace Stampsy.Social.Providers
             throw new AggregateException ("Could not obtain session via either provider", providerExceptions);
         }
 
-        async Task<Session> GetSession (AccountProvider provider, bool isLast, LoginOptions options)
+        async Task<Session> GetSession (AccountProvider provider, bool isLast, LoginOptions options, CancellationToken token)
         {
             if (!SessionManager.NetworkMonitor.IsNetworkAvailable)
                 throw new OfflineException ();
@@ -63,7 +65,9 @@ namespace Stampsy.Social.Providers
             if (service.SupportsVerification) {
                 // For services that support verification, do it now
                 try {
-                    await service.VerifyAsync (account);
+                    await service.VerifyAsync (account, token);
+                } catch (TaskCanceledException) {
+                    throw;
                 } catch (Exception ex) {
                     throw new InvalidOperationException ("Account verification failed.", ex);
                 }
