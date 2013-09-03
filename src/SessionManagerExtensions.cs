@@ -6,138 +6,60 @@ namespace Stampsy.Social
 {
     internal static class SessionManagerExtensions
     {
-        static Task<T> WithSession<T> (ServiceManager manager, Func<Task<T>> call, string [] scope, LoginOptions options, bool allowReauthorize, bool allowRetryLogin)
+        static async Task<T> WithSession<T> (ServiceManager manager, Func<Task<T>> call, string [] scope, LoginOptions options, bool allowReauthorizeOrLogout = true)
         {
-            // Check connection
-
             if (!SessionManager.NetworkMonitor.IsNetworkAvailable)
-                return Task.Factory.FromException<T> (new OfflineException ());
+                throw new OfflineException ();
 
-            // Make sure we are logged in
+            var session = await manager.GetSessionAsync (options, scope);
+            ApiException ex = null;
 
-            return manager.GetSessionAsync (options, scope).ContinueWith (loginTask => {
-                if (loginTask.IsCanceled || loginTask.IsFaulted)
-                    return loginTask.Cast<T> ();
+            try {
+                return await call ();
+            } catch (ApiException aex) {
+                if (!allowReauthorizeOrLogout)
+                    throw;
 
-                var session = loginTask.Result;
+                ex = aex;
+            } catch (Exception) {
+                throw;
+            }
 
-                // Try to make the API call
+            bool tryReauthorize = (ex.Kind == ApiExceptionKind.Unauthorized);
+            if (tryReauthorize) {
+                Session reauthorizedSession = null;
 
-                return call ().ContinueWith (callTask => {
-                    if (!callTask.IsFaulted)
-                        return callTask;
+                try {
+                    var service = session.Service;
+                    var badAccount = session.Account;
+                    var reauthorizedAccount = await service.ReauthorizeAsync (badAccount);
 
-                    // The call failed--maybe we can reauthorize?
+                    reauthorizedSession = new Session (service, reauthorizedAccount);
+                } catch { }
 
-                    return ConsiderReauthorize (manager, session, callTask.Exception, allowReauthorize).ContinueWith (reauthTask => {
-                        if (reauthTask.IsCanceled)
-                            return reauthTask.Cast<T> ();
+                if (reauthorizedSession != null) {
+                    await manager.SwitchSessionAsync (reauthorizedSession, true);
+                    return await call ();
+                }
+            }
 
-                        // Reauthorization succeeded--switch active session
-                        // and retry the API call
+            bool tryLogout = (ex.Kind == ApiExceptionKind.Unauthorized || ex.Kind == ApiExceptionKind.Forbidden);
+            if (tryLogout) {
+                await manager.CloseSessionAsync ();
+                return await WithSession (manager, call, scope, options, false);
+            }
 
-                        if (!reauthTask.IsFaulted) {
-                            var newSession = reauthTask.Result;
-
-                            return manager.SwitchSessionAsync (newSession, true).ContinueWith (
-                                _ => call (),
-                                TaskScheduler.FromCurrentSynchronizationContext ()
-                            ).Unwrap ();
-                        }
-
-                        // Reauthorization failed
-
-                        bool mustLogout = reauthTask.Exception.InnerException as MustLogoutException != null;
-                        if (!mustLogout)
-                            return reauthTask.Cast<T> ();
-
-                        manager.CloseSession ();
-
-                        if (!allowRetryLogin)
-                            return reauthTask.Cast<T> ();
-
-                        return WithSession (manager, call, scope, options, allowReauthorize: false, allowRetryLogin: false);
-
-                    }, TaskScheduler.FromCurrentSynchronizationContext ()).Unwrap ();
-                }, TaskScheduler.FromCurrentSynchronizationContext ()).Unwrap ();
-            }, TaskScheduler.FromCurrentSynchronizationContext ()).Unwrap ();
+            throw ex;
         }
 
         internal static Task WithSession (this ServiceManager manager, Func<Task> call, LoginOptions options, string [] scope = null)
         {
-            return WithSession (manager, () => call ().MakeGeneric (), scope, options, true, true);
+            return WithSession (manager, async () => { await call (); return true; }, scope, options);
         }
 
         internal static Task<T> WithSession<T> (this ServiceManager manager, Func<Task<T>> call, LoginOptions options, string [] scope = null)
         {
-            return WithSession (manager, call, scope, options, true, true);
-        }
-
-        static Task<Session> ConsiderReauthorize (ServiceManager manager, Session session, AggregateException aex, bool allowReauthorize)
-        {
-            var ex = aex.Flatten ().InnerException as ApiException;
-
-            // We may have a chance at reauthorizing
-
-            if (ex != null && ex.Kind == ApiExceptionKind.Unauthorized && allowReauthorize) {
-                return session.Reauthorize ().ContinueWith (t => {
-                    if (t.IsCanceled || t.IsFaulted)
-                        throw new MustLogoutException (t.Exception);
-
-                    return t.Result;
-                });
-            }
-
-            var tcs = new TaskCompletionSource<Session> ();
-
-            // If the call failed due to an unrelated error, there is no point to reauthorizing.
-            // Otherwise, interpret it as a bad session that we just couldn't reauthorize.
-
-            if (ex == null || ex.Kind == ApiExceptionKind.Other)
-                tcs.SetException (aex);
-            else
-                tcs.SetException (new MustLogoutException (ex));
-
-            return tcs.Task;
-        }
-
-        static Task<Session> Reauthorize (this Session session)
-        {
-            var service = session.Service;
-            var account = session.Account;
-
-            try {
-                return service.ReauthorizeAsync (account).ContinueWith (t => {
-                    return new Session (service, t.Result);
-                });
-            } catch (Exception ex) {
-                return Task.Factory.FromException<Session> (ex);
-            }
-        }
-
-        static Task<T> Cast<T> (this Task t)
-        {
-            var tcs = new TaskCompletionSource<T> ();
-            t.ContinueWith (tcs.SetFromTask);
-            return tcs.Task;
-        }
-
-        static Task<bool> MakeGeneric (this Task task)
-        {
-            return task.ContinueWith (t => {
-                if (t.IsFaulted)
-                    throw t.Exception;
-
-                return true;
-            }, TaskContinuationOptions.NotOnCanceled);
-
-        }
-
-        class MustLogoutException : Exception {
-            public MustLogoutException (Exception inner)
-                : base ("Could not reauthorize", inner)
-            {
-            }
+            return WithSession (manager, call, scope, options);
         }
     }
 }

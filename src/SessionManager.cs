@@ -170,7 +170,7 @@ namespace Stampsy.Social
             var tcs = new TaskCompletionSource<Session> ();
             tcs.SetResult (session);
 
-            if (saveAccount)
+            if (saveAccount && session.Service.SupportsSave)
                 session.Service.SaveAccount (session.Account);
 
             GetSessionAsync (() => tcs.Task);
