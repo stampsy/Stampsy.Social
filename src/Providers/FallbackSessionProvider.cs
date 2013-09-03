@@ -30,83 +30,84 @@ namespace Stampsy.Social.Providers
             var providerExceptions = new List<Exception> ();
 
             // Try each provider in turn
-
             foreach (var pi in providers.Select ((p, i) => new { Provider = p, Index = i })) {
                 bool isLast = (pi.Index == providers.Count - 1);
                 AccountProvider provider = pi.Provider;
 
-                if (!SessionManager.NetworkMonitor.IsNetworkAvailable)
-                    throw new OfflineException ();
-
                 try {
-                    List<Account> accounts = null;
-
-                    // Now, let's get accounts for current provider.
-                    // For different services and login methods, this may launch Safari, show iOS 6 prompt or just query ACAccounts.
-
-                    options.TryReportProgress (provider.ProgressWhileAuthenticating);
-                    try {
-                        accounts = (await provider.GetAccounts ()).ToList ();
-                    } finally {
-                        options.TryReportProgress (LoginProgress.Authorizing);
-                    }
-
-                    Account account = null;
-
-                    if (accounts.Count == 0) {
-                        throw new InvalidOperationException ("No accounts found for this service.");
-                    } else if (accounts.Count == 1) {
-                        account = accounts [0];
-                    } else {
-                        // If there is more than a single account, present an interface to choose one.
-                        // If fallback is available, add it to the list of options with null value.
-
-                        var choiceUI = options.AccountChoiceProvider;
-                        if (choiceUI == null)
-                            throw new InvalidOperationException ("There is more than one account, but no accountChoiceProvider was specified.");
-
-                        // Add "Other" option that will just fall back to next provider
-                        if (!isLast)
-                            accounts.Add (null);
-
-                        // Show chooser interface
-                        options.TryReportProgress (LoginProgress.PresentingAccountChoice);
-                        try {
-                            account = await choiceUI.ChooseAsync (accounts, (a) => (a != null) ? a.Username : "Other");
-                        } finally {
-                            options.TryReportProgress (LoginProgress.Authorizing);
-                        }
-
-                        // If the user has chosen "Other" option, fall back to next provider
-                        if (account == null)
-                            continue;
-                    }
-
-                    var service = provider.Service;
-                    var session = new Session (service, account);
-
-                    if (service.SupportsVerification) {
-                        // For services that support verification, do it now
-                        try {
-                            await service.VerifyAsync (account);
-                        } catch (Exception ex) {
-                            throw new InvalidOperationException ("Account verification failed.", ex);
-                        }
-                    }
-
-                    // OK
-                    return session;
-
+                    return await GetSession (provider, isLast, options);
                 } catch (TaskCanceledException) {
                     throw;
                 } catch (Exception ex) {
-                    // Whenever authorization fails, store the exception.
-                    // If neither provider works, we'll throw an aggregate exception with this list.
                     providerExceptions.Add (ex);
                 }
             }
 
+            // Neither provider worked
             throw new AggregateException ("Could not obtain session via either provider", providerExceptions);
+        }
+
+        async Task<Session> GetSession (AccountProvider provider, bool isLast, LoginOptions options)
+        {
+            if (!SessionManager.NetworkMonitor.IsNetworkAvailable)
+                throw new OfflineException ();
+
+            var account = await GetAccount (provider, !isLast, options);
+            if (account == null)
+                throw new Exception ("The user chose to skip this provider.");
+
+            var service = provider.Service;
+            var session = new Session (service, account);
+
+            if (service.SupportsVerification) {
+                // For services that support verification, do it now
+                try {
+                    await service.VerifyAsync (account);
+                } catch (Exception ex) {
+                    throw new InvalidOperationException ("Account verification failed.", ex);
+                }
+            }
+
+            return session;
+        }
+
+        async Task<Account> GetAccount (AccountProvider provider, bool allowFallback, LoginOptions options)
+        {
+            List<Account> accounts = null;
+
+            options.TryReportProgress (provider.ProgressWhileAuthenticating);
+            try {
+                // Now, let's get accounts for current provider.
+                // For different services and login methods, this may launch Safari, show iOS 6 prompt or just query ACAccounts.
+                accounts = (await provider.GetAccounts ()).ToList ();
+            } finally {
+                options.TryReportProgress (LoginProgress.Authorizing);
+            }
+
+            if (accounts.Count == 0)
+                throw new InvalidOperationException ("No accounts found for this service.");
+
+            if (accounts.Count == 1)
+                return accounts [0];
+
+            // If there is more than a single account, present an interface to choose one.
+            // If fallback is available, add it to the list of options with null value.
+
+            var choiceUI = options.AccountChoiceProvider;
+            if (choiceUI == null)
+                throw new InvalidOperationException ("There is more than one account, but no accountChoiceProvider was specified.");
+
+            // Add "Other" option that falls back to next provider
+            if (allowFallback)
+                accounts.Add (null);
+
+            // Show chooser interface
+            options.TryReportProgress (LoginProgress.PresentingAccountChoice);
+            try {
+                return await choiceUI.ChooseAsync (accounts, (a) => (a != null) ? a.Username : "Other");
+            } finally {
+                options.TryReportProgress (LoginProgress.Authorizing);
+            }
         }
 
         IEnumerable<AccountProvider> GetProviderChain (LoginOptions options, string [] scope)
