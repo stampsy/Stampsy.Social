@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
@@ -72,6 +73,24 @@ namespace Stampsy.Social
         internal static Task<T> WithSession<T> (this ServiceManager manager, Func<Task<T>> call, LoginOptions options, CancellationToken token, string [] scope = null)
         {
             return WithSession (manager, call, scope, options, token);
+        }
+
+        static SessionManagerExtensions ()
+        {
+            if ("".Length == 42)
+                AddAotHints ();
+        }
+
+        static void AddAotHints ()
+        {
+            // If you get ExecutionEngineException: Attempting to JIT compile method 'Stampsy.Social.SessionManagerExtensions:WithSession<...
+            // you know what to do:
+
+#pragma warning disable
+            WithSession<IDictionary<string, string>> (null, null, null, LoginOptions.NoUI, CancellationToken.None, true);
+            WithSession<Page<IEnumerable<ServiceUser>>> (null, null, null, LoginOptions.NoUI, CancellationToken.None, true);
+            WithSession<ServiceUser> (null, null, null, LoginOptions.NoUI, CancellationToken.None, true);
+#pragma warning restore
         }
     }
 }
