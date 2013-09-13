@@ -3,6 +3,14 @@ Stampsy.Social
 
 A library on top of Xamarin.Auth and Xamarin.Social that provides native login with Safari fallback, and implements common APIs for Facebook, Twitter, Google and Dropbox.
 
+### Dependencies
+
+* [Newtonsoft.Json](https://github.com/ayoung/Newtonsoft.Json/)
+* [Xamarin.Auth fork](http://github.com/stampsy/Xamarin.Auth/)
+* [Xamarin.Social fork](https://github.com/stampsy/Xamarin.Social/)
+
+(We need forks because there's some too iOS-specific stuff in there. I try to keep these forks in sync with Xamarin's versions.)
+
 ### Why
 
 Our goal was to have a unified interface to authenticating and calling Facebook, Twitter and Google APIs. *Managers*, such as `FacebookManager` and `TwitterManager` wrap Xamarin.Social services, but allow to specify several services for fallback. For example, we might want to first use native login, and if it fails, fall back to Safari:
