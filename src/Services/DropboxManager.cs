@@ -86,7 +86,7 @@ namespace Stampsy.Social
 
         #region Implementation
 
-        Task<Metadata> LoadThumbnail (string path, string size, string destPath, CancellationToken token)
+        async Task<Metadata> LoadThumbnail (string path, string size, string destPath, CancellationToken token)
         {
             var session = EnsureLoggedIn ();
 
@@ -94,99 +94,82 @@ namespace Stampsy.Social
             var request = session.Service.CreateRequest ("GET", uri, session.Account);
             request.Parameters ["size"] = size;
 
-            return request.GetResponseAsync (token).ContinueWith (t => {
-                Response res = t.Result;
-                var metadataText = res.Headers["x-dropbox-metadata"];
-                var metadata = ParseMetadata (JToken.Parse (metadataText));
+            Response res = await request.GetResponseAsync (token).ConfigureAwait (false);
+            token.ThrowIfCancellationRequested ();
 
-                var s = res.GetResponseStream ();
+            var metadataText = res.Headers["x-dropbox-metadata"];
+            var metadata = ParseMetadata (JToken.Parse (metadataText));
+
+            try {
+                using (var s = res.GetResponseStream ())
                 using (var fs = File.Create (destPath)) {
                     s.CopyTo (fs);
                 }
+            } catch {
+                TryDelete (destPath);
+                throw;
+            }
 
-                return metadata;
-            }, token);
+            return metadata;
         }
 
-        Task<Metadata> LoadFile (string path, string destPath, Action<float> progress, CancellationToken token)
+        async Task<Metadata> LoadFile (string path, string destPath, Action<float> progress, CancellationToken token)
         {
             var session = EnsureLoggedIn ();
 
             var uri = FormatUri ((DropboxService) session.Service, BaseContentUri, "files/{root}{path}", path);
             var request = session.Service.CreateRequest ("GET", uri, session.Account);
 
-            return request.GetResponseAsync (token).ContinueWith (responseTask => {
-                Response res = responseTask.Result;
-                var metadataText = res.Headers ["x-dropbox-metadata"];
-                var metadata = ParseMetadata (JToken.Parse (metadataText));
+            Response res = await request.GetResponseAsync (token).ConfigureAwait (false);
+            token.ThrowIfCancellationRequested ();
 
-                const int BufferLength = 16 * 1024;
+            var metadataText = res.Headers ["x-dropbox-metadata"];
+            var metadata = ParseMetadata (JToken.Parse (metadataText));
 
-                var state = new LoadFileAsyncState {
-                    OutputStream = File.Create (destPath),
-                    ResponseStream = res.GetResponseStream (),
-                    OnProgress = progress,
-                    Metadata = metadata,
-                    TotalBytes = Int64.Parse (res.Headers["Content-Length"]),
-                    Buffer = new byte [BufferLength],
-                    BufferLength = BufferLength
-                };
+            const int BufferLength = 16 * 1024;
 
-                return ReadNextChunksAsync (state, token).ContinueWith (downloadTask => {
-                    state.Dispose ();
+            using (var state = new LoadFileAsyncState {
+                OutputStream = File.Create (destPath),
+                ResponseStream = res.GetResponseStream (),
+                OnProgress = progress,
+                Metadata = metadata,
+                TotalBytes = Int64.Parse (res.Headers["Content-Length"]),
+                Buffer = new byte [BufferLength],
+                BufferLength = BufferLength
+            }) {
+                try {
+                    int readBytes;
+                    do {
+                        readBytes = await ReadNextChunkAsync (state).ConfigureAwait (false);
+                        token.ThrowIfCancellationRequested ();
+                    } while (readBytes > 0);
 
-                    if (downloadTask.IsCanceled || downloadTask.IsFaulted) {
-                        try {
-                            File.Delete (destPath);
-                        } catch { }
-                    }
-
-                    return downloadTask.Result;
-                });
-            }).Unwrap ();
-        }
-
-        struct LoadFileAsyncState : IDisposable
-        {
-            public byte [] Buffer;
-            public int BufferLength;
-            public long BytesLoaded { get; set; }
-            public long TotalBytes { get; set; }
-
-            public FileStream OutputStream { get; set; }
-            public Stream ResponseStream { get; set; }
-            public Action<float> OnProgress { get; set; }
-            public Metadata Metadata { get; set; }
-
-            public void Dispose ()
-            {
-                ResponseStream.Close ();
-                OutputStream.Close ();
+                    return metadata;
+                } catch {
+                    TryDelete (destPath);
+                    throw;
+                }
             }
         }
 
-        Task<Metadata> ReadNextChunksAsync (LoadFileAsyncState state, CancellationToken token)
+        async Task<int> ReadNextChunkAsync (LoadFileAsyncState state)
         {
-            return Task.Factory.FromAsync<byte[], int, int, int> (
+            int bytesRead = await Task.Factory.FromAsync<byte[], int, int, int> (
                 state.ResponseStream.BeginRead,
                 state.ResponseStream.EndRead,
                 state.Buffer, 0, state.BufferLength, null
-            ).ContinueWith (t => {
-                int bytesRead = t.Result;
-                if (bytesRead == 0)
-                    return Task.FromResult (state.Metadata);
+            ).ConfigureAwait (false);
 
+            if (bytesRead > 0) {
                 state.BytesLoaded += bytesRead;
 
                 if (state.OnProgress != null)
                     state.OnProgress (((float) state.BytesLoaded) / state.TotalBytes);
 
                 state.OutputStream.Write (state.Buffer, 0, bytesRead);
+            }
 
-                token.ThrowIfCancellationRequested ();
-                return ReadNextChunksAsync (state, token);
-
-            }, token, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default).Unwrap ();
+            return bytesRead;
         }
 
         Task<Metadata> GetMetadata (string path, bool includeContent, string hash, CancellationToken token)
@@ -276,6 +259,32 @@ namespace Stampsy.Social
                 data.Contents = contentsJson.Select (ParseMetadata).ToArray ();
 
             return data;
+        }
+
+        static void TryDelete (string file)
+        {
+            try {
+                File.Delete (file);
+            } catch { }
+        }
+
+        struct LoadFileAsyncState : IDisposable
+        {
+            public byte [] Buffer;
+            public int BufferLength;
+            public long BytesLoaded { get; set; }
+            public long TotalBytes { get; set; }
+
+            public FileStream OutputStream { get; set; }
+            public Stream ResponseStream { get; set; }
+            public Action<float> OnProgress { get; set; }
+            public Metadata Metadata { get; set; }
+
+            public void Dispose ()
+            {
+                ResponseStream.Close ();
+                OutputStream.Close ();
+            }
         }
 
         public struct Metadata
