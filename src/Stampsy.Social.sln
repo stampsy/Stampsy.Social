@@ -1,0 +1,80 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stampsy.Social.iOS", "Stampsy.Social.iOS\Stampsy.Social.iOS.csproj", "{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iOS", "iOS", "{1811CD45-54B4-4A2E-9CCD-4AF7CF7BBB6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{438F6DF1-671B-4BE1-AFCD-CB3D3791C289}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stampsy.Social", "Stampsy.Social\Stampsy.Social.csproj", "{5F1EEB82-EDB6-417B-B684-26632CF4B6FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stampsy.Social.Android", "Stampsy.Social.Android\Stampsy.Social.Android.csproj", "{BC55CF87-1562-47CE-AB59-FF68A8E35584}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Social", "..\libs\Xamarin.Social\src\Xamarin.Social\Xamarin.Social.csproj", "{2CAFD7AE-C52F-4F01-9E25-58656DD8476D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Auth", "..\libs\Xamarin.Social\Xamarin.Auth\src\Xamarin.Auth\Xamarin.Auth.csproj", "{C9FF1919-78DD-4084-976D-BDABC0A7E80B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Auth.iOS", "..\libs\Xamarin.Social\Xamarin.Auth\src\Xamarin.Auth.iOS\Xamarin.Auth.iOS.csproj", "{9309BCCC-AA7B-4195-A130-D4572FA9488D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Auth.Android", "..\libs\Xamarin.Social\Xamarin.Auth\src\Xamarin.Auth.Android\Xamarin.Auth.Android.csproj", "{FCF02C8C-6DD3-4C59-A8A2-58BC01A4BB21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Social.Android", "..\libs\Xamarin.Social\src\Xamarin.Social.Android\Xamarin.Social.Android.csproj", "{BA8CBA8B-7F55-4167-B872-0BBF09F08B8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Social.iOS", "..\libs\Xamarin.Social\src\Xamarin.Social.iOS\Xamarin.Social.iOS.csproj", "{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F1EEB82-EDB6-417B-B684-26632CF4B6FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F1EEB82-EDB6-417B-B684-26632CF4B6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F1EEB82-EDB6-417B-B684-26632CF4B6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F1EEB82-EDB6-417B-B684-26632CF4B6FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC55CF87-1562-47CE-AB59-FF68A8E35584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC55CF87-1562-47CE-AB59-FF68A8E35584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC55CF87-1562-47CE-AB59-FF68A8E35584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC55CF87-1562-47CE-AB59-FF68A8E35584}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CAFD7AE-C52F-4F01-9E25-58656DD8476D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CAFD7AE-C52F-4F01-9E25-58656DD8476D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CAFD7AE-C52F-4F01-9E25-58656DD8476D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CAFD7AE-C52F-4F01-9E25-58656DD8476D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FF1919-78DD-4084-976D-BDABC0A7E80B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FF1919-78DD-4084-976D-BDABC0A7E80B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FF1919-78DD-4084-976D-BDABC0A7E80B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FF1919-78DD-4084-976D-BDABC0A7E80B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9309BCCC-AA7B-4195-A130-D4572FA9488D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9309BCCC-AA7B-4195-A130-D4572FA9488D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9309BCCC-AA7B-4195-A130-D4572FA9488D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9309BCCC-AA7B-4195-A130-D4572FA9488D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCF02C8C-6DD3-4C59-A8A2-58BC01A4BB21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCF02C8C-6DD3-4C59-A8A2-58BC01A4BB21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCF02C8C-6DD3-4C59-A8A2-58BC01A4BB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCF02C8C-6DD3-4C59-A8A2-58BC01A4BB21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA8CBA8B-7F55-4167-B872-0BBF09F08B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA8CBA8B-7F55-4167-B872-0BBF09F08B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA8CBA8B-7F55-4167-B872-0BBF09F08B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA8CBA8B-7F55-4167-B872-0BBF09F08B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3} = {1811CD45-54B4-4A2E-9CCD-4AF7CF7BBB6A}
+		{9309BCCC-AA7B-4195-A130-D4572FA9488D} = {1811CD45-54B4-4A2E-9CCD-4AF7CF7BBB6A}
+		{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5} = {1811CD45-54B4-4A2E-9CCD-4AF7CF7BBB6A}
+		{BC55CF87-1562-47CE-AB59-FF68A8E35584} = {438F6DF1-671B-4BE1-AFCD-CB3D3791C289}
+		{FCF02C8C-6DD3-4C59-A8A2-58BC01A4BB21} = {438F6DF1-671B-4BE1-AFCD-CB3D3791C289}
+		{BA8CBA8B-7F55-4167-B872-0BBF09F08B8C} = {438F6DF1-671B-4BE1-AFCD-CB3D3791C289}
+	EndGlobalSection
+EndGlobal
