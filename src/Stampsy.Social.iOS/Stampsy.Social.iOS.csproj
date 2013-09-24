@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}</ProjectGuid>
+    <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Stampsy.Social</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>Stampsy.Social</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="monotouch" />
+    <Reference Include="System.Web.Services" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="..\Stampsy.Social\ApiException.cs">
+      <Link>ApiException.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\ApiExceptionKind.cs">
+      <Link>ApiExceptionKind.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Extensions\JsonExtensions.cs">
+      <Link>Extensions\JsonExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Gender.cs">
+      <Link>Gender.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\IChoiceProvider.cs">
+      <Link>IChoiceProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\INetworkMonitor.cs">
+      <Link>INetworkMonitor.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\LoginOptions.cs">
+      <Link>LoginOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\LoginProgress.cs">
+      <Link>LoginProgress.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\OfflineException.cs">
+      <Link>OfflineException.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Page.cs">
+      <Link>Page.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Providers\FallbackSessionProvider.cs">
+      <Link>Providers\FallbackSessionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Providers\ISessionProvider.cs">
+      <Link>Providers\ISessionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Services\DropboxManager.cs">
+      <Link>Services\DropboxManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Services\FacebookManager.cs">
+      <Link>Services\FacebookManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Services\GoogleManager.cs">
+      <Link>Services\GoogleManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Services\ServiceManager.cs">
+      <Link>Services\ServiceManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Services\TwitterManager.cs">
+      <Link>Services\TwitterManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\ServiceUser.cs">
+      <Link>ServiceUser.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Session.cs">
+      <Link>Session.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\SessionManager.cs">
+      <Link>SessionManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\SessionManagerExtensions.cs">
+      <Link>SessionManagerExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\SessionState.cs">
+      <Link>SessionState.cs</Link>
+    </Compile>
+    <Compile Include="..\Stampsy.Social\Utils.cs">
+      <Link>Utils.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Xamarin.Auth\src\Xamarin.Auth.iOS\Xamarin.Auth.iOS.csproj">
+      <Project>{9309bccc-aa7b-4195-a130-d4572fa9488d}</Project>
+      <Name>Xamarin.Auth.iOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Xamarin.Social\src\Xamarin.Social.iOS\Xamarin.Social.iOS.csproj">
+      <Project>{c91ef8fc-37e3-4952-a8a3-ba3a4422b0c5}</Project>
+      <Name>Xamarin.Social.iOS</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy NoTabsAfterNonTabs="True" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>

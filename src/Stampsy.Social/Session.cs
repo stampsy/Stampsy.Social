@@ -1,4 +1,3 @@
-using System;
 using Xamarin.Auth;
 using Xamarin.Social;
 

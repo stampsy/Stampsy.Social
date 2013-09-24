@@ -1,6 +1,9 @@
-using System;
+#if PLATFORM_IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+#elif PLATFORM_ANDROID
+
+#endif
 
 namespace Stampsy.Social
 {
@@ -8,7 +11,13 @@ namespace Stampsy.Social
     {
         public static void EnsureMainThread ()
         {
+#if PLATFORM_IOS
             UIApplication.EnsureUIThread ();
+#elif PLATFORM_ANDROID
+
+#else
+
+#endif
         }
     }
 }

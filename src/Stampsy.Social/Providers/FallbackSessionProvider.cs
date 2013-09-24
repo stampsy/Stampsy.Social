@@ -5,9 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
 using Xamarin.Social;
-using Xamarin.Social.Services;
+
+#if PLATFORM_IOS
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
+#elif PLATFORM_ANDROID
+
+#endif
 
 namespace Stampsy.Social.Providers
 {
@@ -78,7 +82,7 @@ namespace Stampsy.Social.Providers
 
         async Task<Account> GetAccount (AccountProvider provider, bool allowFallback, LoginOptions options)
         {
-            List<Account> accounts = null;
+            List<Account> accounts;
 
             options.TryReportProgress (provider.ProgressWhileAuthenticating);
             try {
@@ -109,12 +113,13 @@ namespace Stampsy.Social.Providers
             // Show chooser interface
             options.TryReportProgress (LoginProgress.PresentingAccountChoice);
             try {
-                return await choiceUI.ChooseAsync (accounts, (a) => (a != null) ? a.Username : "Other");
+                return await choiceUI.ChooseAsync (accounts, a => (a != null) ? a.Username : "Other");
             } finally {
                 options.TryReportProgress (LoginProgress.Authorizing);
             }
         }
 
+#if PLATFORM_IOS
         IEnumerable<AccountProvider> GetProviderChain (LoginOptions options, string [] scope)
         {
             foreach (var serviceFactory in _fallbackChain) {
@@ -138,7 +143,16 @@ namespace Stampsy.Social.Providers
                 }
             }
         }
+#elif PLATFORM_ANDROID
 
+#else
+        private IEnumerable<AccountProvider> GetProviderChain(LoginOptions options, string[] scope)
+        {
+            throw new NotSupportedException("GetProviderChain not supported on this platform.");
+        }
+#endif
+
+#if PLATFORM_IOS
         class AccountProvider
         {
             public Service Service { get; private set; }
@@ -185,5 +199,26 @@ namespace Stampsy.Social.Providers
                     return Service.GetAccountsAsync ();
             }
         }
+#elif PLATFORM_ANDROID
+
+#else
+        private class AccountProvider
+        {
+            public Service Service { get; private set; }
+
+            public Task<IEnumerable<Account>> GetAccounts()
+            {
+                throw new NotImplementedException("GetAccounts not implemented on this platform.");
+            }
+
+            public LoginProgress ProgressWhileAuthenticating
+            {
+                get
+                {
+                    throw new NotImplementedException("GetAccounts not implemented on this platform.");
+                }
+            }
+        }
+#endif
     }
 }

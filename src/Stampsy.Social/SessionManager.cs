@@ -1,16 +1,18 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Social.Services;
 using Xamarin.Social;
-using Xamarin.Auth;
-using Stampsy.Social;
+
+using Stampsy.Social.Providers;
+
+
+#if PLATFORM_IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-using Newtonsoft.Json.Linq;
-using Stampsy.Social.Providers;
+#elif PLATFORM_ANDROID
+
+#endif
+
 
 namespace Stampsy.Social
 {
@@ -78,14 +80,14 @@ namespace Stampsy.Social
             }
         }
 
-        public SessionManager (params Func<Service> [] fallbackChain)
+        protected SessionManager (params Func<Service> [] fallbackChain)
         {
             _provider = new FallbackSessionProvider (fallbackChain);
         }
 
         public Task<Session> GetSessionAsync (LoginOptions options, string [] scope = null)
         {
-            return GetSessionAsync ((token) =>
+            return GetSessionAsync (token =>
                 _provider.Login (options, scope, token)
             );
         }
@@ -134,9 +136,7 @@ namespace Stampsy.Social
                 _task = OpenSessionAsync (sessionFactory, _openSessionCts.Token);
                 OnStateChanged ();
 
-                _task.ContinueWith (t => {
-                    OnStateChanged ();
-                }, TaskScheduler.FromCurrentSynchronizationContext ());
+                _task.ContinueWith (t => OnStateChanged (), TaskScheduler.FromCurrentSynchronizationContext ());
             }
 
             return _task;

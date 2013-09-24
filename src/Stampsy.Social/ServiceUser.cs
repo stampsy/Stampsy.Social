@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stampsy.Social
@@ -10,7 +11,7 @@ namespace Stampsy.Social
 
         public string Name { get; set; }
 
-        string [] AllNames {
+        IEnumerable<string> AllNames {
             get {
                 if (Name == null)
                     return new string [0];
