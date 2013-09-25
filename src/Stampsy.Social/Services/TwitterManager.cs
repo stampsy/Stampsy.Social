@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Xamarin.Auth;
-using Xamarin.Social.Services;
-using Stampsy.Social.Providers;
 using Xamarin.Social;
 
 namespace Stampsy.Social.Services

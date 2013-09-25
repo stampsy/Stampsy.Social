@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Web;
 using Xamarin.Auth;
 using Xamarin.Social;
 using Xamarin.Social.Services;
