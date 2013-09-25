@@ -5,7 +5,9 @@ namespace Stampsy.Social
         Authorizing,
         PresentingAccountChoice,
         PresentingAuthController,
+#if PLATFORM_IOS
         PresentingSafari
+#endif
     }
 }
 
