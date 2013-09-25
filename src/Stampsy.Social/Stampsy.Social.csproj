@@ -58,7 +58,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\FallbackSessionProvider.cs" />
     <Compile Include="Providers\ISessionProvider.cs" />
-    <Compile Include="Services\DropboxManager.cs" />
+    <None Include="Services\DropboxManager.cs" />
     <Compile Include="Services\FacebookManager.cs" />
     <Compile Include="Services\GoogleManager.cs" />
     <Compile Include="Services\ServiceManager.cs" />

@@ -1,16 +1,15 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Social;
-
 using Stampsy.Social.Providers;
+using Service = Xamarin.Social.Service;
 
 
 #if PLATFORM_IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 #elif PLATFORM_ANDROID
-
+using Android.App;
 #endif
 
 

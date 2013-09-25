@@ -5,12 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
 using Xamarin.Social;
+using Service = Xamarin.Social.Service;
 
 #if PLATFORM_IOS
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
 #elif PLATFORM_ANDROID
-
+using Android.App;
+using Android.Content;
 #endif
 
 namespace Stampsy.Social.Providers
@@ -144,11 +146,35 @@ namespace Stampsy.Social.Providers
             }
         }
 #elif PLATFORM_ANDROID
-
-#else
-        private IEnumerable<AccountProvider> GetProviderChain(LoginOptions options, string[] scope)
+        IEnumerable<AccountProvider> GetProviderChain(LoginOptions options, string[] scope)
         {
-            throw new NotSupportedException("GetProviderChain not supported on this platform.");
+            foreach (var serviceFactory in _fallbackChain)
+            {
+                var service = serviceFactory();
+
+                var scoped = service as ISupportScope;
+                if (scoped != null && scope != null)
+                    scoped.Scopes = scope;
+
+                //var system = service as IOSService;
+                //if (system != null)
+                //    system.AllowLoginUI = options.AllowLoginUI;
+
+                yield return new AccountProvider(service, false);
+
+                if (options.AllowLoginUI && service.SupportsAuthentication)
+                {
+                    if (options.PresentAuthController != null)
+                        yield return new AccountProvider(service, options.Activity);
+                    else
+                        yield return new AccountProvider(service, true);
+                }
+            }
+        }
+#else
+        IEnumerable<AccountProvider> GetProviderChain(LoginOptions options, string[] scope)
+        {
+            throw new NotImplementedException("GetProviderChain not implemented on this platform.");
         }
 #endif
 
@@ -200,7 +226,57 @@ namespace Stampsy.Social.Providers
             }
         }
 #elif PLATFORM_ANDROID
+        class AccountProvider
+        {
+            public Service Service { get; private set; }
+            //public bool UseSafari { get; private set; }
+            //public Action<Activity, Intent, bool, Action> PresentAuthController { get; private set; }
+            public Activity Activity { get; private set; }
 
+            public LoginProgress ProgressWhileAuthenticating
+            {
+                get
+                {
+                    //if (PresentAuthController != null)
+                    if (Activity != null)
+                        return LoginProgress.PresentingAuthController;
+
+                    //if (UseSafari)
+                    //    return LoginProgress.PresentingSafari;
+
+                    return LoginProgress.Authorizing;
+                }
+            }
+
+            public AccountProvider(Service service, Activity activity)
+            {
+                if (!service.SupportsAuthentication)
+                    throw new NotSupportedException(string.Format("{0} does not support authentication with a controller", service.Title));
+
+                Service = service;
+                Activity = activity;
+                //PresentAuthController = presentAuthController;
+            }
+
+            public AccountProvider(Service service, bool useSafari)
+            {
+                if (useSafari && !service.SupportsAuthentication)
+                    throw new NotSupportedException(string.Format("{0} does not support authentication with Safari", service.Title));
+
+                Service = service;
+                //UseSafari = useSafari;
+            }
+
+            public Task<IEnumerable<Account>> GetAccounts()
+            {
+                //if (UseSafari)
+                //    return Service.GetAccountsAsync(SafariUrlHandler.Instance);
+                if (Activity != null)
+                    return Service.GetAccountsAsync(Activity);
+                else
+                    return Service.GetAccountsAsync();
+            }
+        }
 #else
         private class AccountProvider
         {

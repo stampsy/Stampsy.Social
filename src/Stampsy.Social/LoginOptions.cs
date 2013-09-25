@@ -4,17 +4,19 @@ using Xamarin.Auth;
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
 #elif PLATFORM_ANDROID
-
+using Android.App;
+using Android.Content;
 #endif
 
 namespace Stampsy.Social
 {
     public struct LoginOptions
     {
-        public static readonly LoginOptions WithUI = new LoginOptions { AllowLoginUI = true };
+        
         public static readonly LoginOptions NoUI = new LoginOptions { AllowLoginUI = false };
-
 #if PLATFORM_IOS
+        public static readonly LoginOptions WithUI = new LoginOptions { AllowLoginUI = true };
+
         public static LoginOptions WithUIAndChoice (
             IChoiceProvider<Account> accountChoiceProvider = null,
             Action<LoginProgress> reportProgress = null,
@@ -28,7 +30,18 @@ namespace Stampsy.Social
             };
         }
 #elif PLATFORM_ANDROID
+        public Activity Activity;
 
+        public static LoginOptions WithUI(Activity activity)
+        {
+            return new LoginOptions
+            {
+                AllowLoginUI = true,
+                Activity = activity
+            };
+        }
+            
+            //= new LoginOptions { AllowLoginUI = true };
 #endif
 
         public bool AllowLoginUI { get; set; }
@@ -38,7 +51,7 @@ namespace Stampsy.Social
 #if PLATFORM_IOS
         public Action<UIViewController, bool, NSAction> PresentAuthController { get; set; }
 #elif PLATFORM_ANDROID
-
+        public Action<Activity, Intent, bool, Action> PresentAuthController { get; set; }
 #else
 
 #endif
