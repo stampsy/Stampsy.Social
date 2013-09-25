@@ -1,9 +1,11 @@
+using System;
 #if PLATFORM_IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 #elif PLATFORM_ANDROID
-
+using Android.OS;
 #endif
+
 
 namespace Stampsy.Social
 {
@@ -14,7 +16,8 @@ namespace Stampsy.Social
 #if PLATFORM_IOS
             UIApplication.EnsureUIThread ();
 #elif PLATFORM_ANDROID
-
+            if (Looper.MyLooper() != Looper.MainLooper)
+                throw new InvalidOperationException("Trying to run UI code from non-ui thread.");
 #else
 
 #endif
