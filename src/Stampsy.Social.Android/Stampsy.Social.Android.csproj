@@ -108,14 +108,7 @@
     <Compile Include="..\Stampsy.Social\Utils.cs">
       <Link>Utils.cs</Link>
     </Compile>
-    <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\AboutResources.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\Values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Xamarin.Auth\src\Xamarin.Auth.Android\Xamarin.Auth.Android.csproj">
