@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -8,8 +7,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Xamarin.Auth;
 using Xamarin.Social;
-using Xamarin.Social.Services;
-using Stampsy.Social.Providers;
 
 namespace Stampsy.Social.Services
 {
@@ -46,8 +43,9 @@ namespace Stampsy.Social.Services
                 options,
                 token,
                 new [] {
-                    UserinfoEmailScopeKey,
-                    PlusMeScopeKey
+                    PlusLoginScopeKey
+                    //UserinfoEmailScopeKey,
+                    //PlusMeScopeKey
                 }
             );
         }
