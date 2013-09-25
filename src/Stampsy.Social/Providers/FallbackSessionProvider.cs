@@ -12,7 +12,6 @@ using MonoTouch.UIKit;
 using MonoTouch.Foundation;
 #elif PLATFORM_ANDROID
 using Android.App;
-using Android.Content;
 #endif
 
 namespace Stampsy.Social.Providers
@@ -156,18 +155,12 @@ namespace Stampsy.Social.Providers
                 if (scoped != null && scope != null)
                     scoped.Scopes = scope;
 
-                //var system = service as IOSService;
-                //if (system != null)
-                //    system.AllowLoginUI = options.AllowLoginUI;
-
-                yield return new AccountProvider(service, false);
+                yield return new AccountProvider(service);
 
                 if (options.AllowLoginUI && service.SupportsAuthentication)
                 {
-                    if (options.PresentAuthController != null)
+                    if (options.Activity != null)
                         yield return new AccountProvider(service, options.Activity);
-                    else
-                        yield return new AccountProvider(service, true);
                 }
             }
         }
@@ -229,20 +222,14 @@ namespace Stampsy.Social.Providers
         class AccountProvider
         {
             public Service Service { get; private set; }
-            //public bool UseSafari { get; private set; }
-            //public Action<Activity, Intent, bool, Action> PresentAuthController { get; private set; }
-            public Activity Activity { get; private set; }
+            private Activity Activity { get; set; }
 
             public LoginProgress ProgressWhileAuthenticating
             {
                 get
                 {
-                    //if (PresentAuthController != null)
                     if (Activity != null)
                         return LoginProgress.PresentingAuthController;
-
-                    //if (UseSafari)
-                    //    return LoginProgress.PresentingSafari;
 
                     return LoginProgress.Authorizing;
                 }
@@ -255,26 +242,19 @@ namespace Stampsy.Social.Providers
 
                 Service = service;
                 Activity = activity;
-                //PresentAuthController = presentAuthController;
             }
 
-            public AccountProvider(Service service, bool useSafari)
+            public AccountProvider(Service service)
             {
-                if (useSafari && !service.SupportsAuthentication)
-                    throw new NotSupportedException(string.Format("{0} does not support authentication with Safari", service.Title));
-
                 Service = service;
-                //UseSafari = useSafari;
             }
 
             public Task<IEnumerable<Account>> GetAccounts()
             {
-                //if (UseSafari)
-                //    return Service.GetAccountsAsync(SafariUrlHandler.Instance);
                 if (Activity != null)
                     return Service.GetAccountsAsync(Activity);
-                else
-                    return Service.GetAccountsAsync();
+                
+                return Service.GetAccountsAsync();
             }
         }
 #else
