@@ -66,6 +66,12 @@ Open `sample/Sociopath.sln` to see how it works.
 * This README is the only planned documentation
 * No unit tests (yet?)
 
+### Gotchas
+
+* Make sure you fill in API keys
+* Facebook: Change bundle ID in `Info.plist` to your bundle ID **and make sure it matches Facebook App settings**
+* Facebook, Twitter, Google and Dropbox: Fill in correct callback URLs in `Services.cs` and **register them in your `Info.plist`**
+
 ### Cloning the Repo
 
 Just clone it recursively:
