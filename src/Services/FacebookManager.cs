@@ -229,7 +229,7 @@ namespace Stampsy.Social.Services
                 }
 
                 return Task.FromResult (t.Result.Value<string> ("id"));
-            }).Unwrap ();
+            }, TaskScheduler.FromCurrentSynchronizationContext ()).Unwrap ();
         }
 
         Task Unlike (string url, string likeId, CancellationToken token)
