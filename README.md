@@ -9,7 +9,7 @@ A library on top of Xamarin.Auth and Xamarin.Social that provides native login w
 * [Xamarin.Auth fork](http://github.com/stampsy/Xamarin.Auth/)
 * [Xamarin.Social fork](https://github.com/stampsy/Xamarin.Social/)
 
-(We need forks because there's some too iOS-specific stuff in there. I try to keep these forks in sync with Xamarin's versions.)
+(We need forks because there's some too iOS-specific stuff in there. There is an ongoing effort on porting some of it to Android. I try to keep these forks in sync with Xamarin's versions.)
 
 ### Why
 
