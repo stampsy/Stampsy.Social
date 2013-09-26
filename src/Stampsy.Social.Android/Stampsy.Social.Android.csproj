@@ -111,13 +111,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Xamarin.Auth\src\Xamarin.Auth.Android\Xamarin.Auth.Android.csproj">
-      <Project>{fcf02c8c-6dd3-4c59-a8a2-58bc01a4bb21}</Project>
-      <Name>Xamarin.Auth.Android</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Xamarin.Social\src\Xamarin.Social.Android\Xamarin.Social.Android.csproj">
+    <ProjectReference Include="..\..\libs\Xamarin.Social\src\Xamarin.Social.Android\Xamarin.Social.Android.csproj">
       <Project>{ba8cba8b-7f55-4167-b872-0bbf09f08b8c}</Project>
       <Name>Xamarin.Social.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\Xamarin.Social\Xamarin.Auth\src\Xamarin.Auth.Android\Xamarin.Auth.Android.csproj">
+      <Project>{fcf02c8c-6dd3-4c59-a8a2-58bc01a4bb21}</Project>
+      <Name>Xamarin.Auth.Android</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

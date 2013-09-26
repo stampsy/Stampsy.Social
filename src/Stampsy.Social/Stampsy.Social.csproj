@@ -69,13 +69,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Xamarin.Auth\src\Xamarin.Auth\Xamarin.Auth.csproj">
-      <Project>{c9ff1919-78dd-4084-976d-bdabc0a7e80b}</Project>
-      <Name>Xamarin.Auth</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Xamarin.Social\src\Xamarin.Social\Xamarin.Social.csproj">
+    <ProjectReference Include="..\..\libs\Xamarin.Social\src\Xamarin.Social\Xamarin.Social.csproj">
       <Project>{2cafd7ae-c52f-4f01-9e25-58656dd8476d}</Project>
       <Name>Xamarin.Social</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\Xamarin.Social\Xamarin.Auth\src\Xamarin.Auth\Xamarin.Auth.csproj">
+      <Project>{c9ff1919-78dd-4084-976d-bdabc0a7e80b}</Project>
+      <Name>Xamarin.Auth</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
