@@ -211,9 +211,9 @@ namespace Stampsy.Social.Providers
             public Task<IEnumerable<Account>> GetAccounts ()
             {
                 if (UseSafari)
-                    return Service.GetAccountsAsync (SafariUrlHandler.Instance);
+                    return Service.GetAccountsWithBrowserAsync (SafariUrlHandler.Instance);
                 else if (PresentAuthController != null)
-                    return Service.GetAccountsAsync (PresentAuthController);
+                    return Service.GetAccountsWithAuthUIAsync (PresentAuthController);
                 else
                     return Service.GetAccountsAsync ();
             }
