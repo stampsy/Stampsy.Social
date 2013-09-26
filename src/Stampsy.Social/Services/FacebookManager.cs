@@ -177,7 +177,7 @@ namespace Stampsy.Social.Services
 
             return GetGraphObjectId (url, token).ContinueWith (t => {
                 return LikeGraphObject (url, t.Result, token);
-            }).Unwrap ();
+            }, TaskScheduler.FromCurrentSynchronizationContext ()).Unwrap ();
         }
 
         Task<FacebookLikeInfo> LikeGraphObject (string url, string objectId, CancellationToken token)
