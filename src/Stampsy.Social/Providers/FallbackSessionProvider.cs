@@ -52,7 +52,7 @@ namespace Stampsy.Social.Providers
             }
 
             // Neither provider worked
-            throw new AggregateException ("Could not obtain session via either provider", providerExceptions);
+            throw new AggregateException ("Could not obtain session via either provider.", providerExceptions);
         }
 
         async Task<Session> GetSession (AccountProvider provider, bool isLast, LoginOptions options, CancellationToken token)
@@ -145,29 +145,27 @@ namespace Stampsy.Social.Providers
             }
         }
 #elif PLATFORM_ANDROID
-        IEnumerable<AccountProvider> GetProviderChain(LoginOptions options, string[] scope)
+        IEnumerable<AccountProvider> GetProviderChain (LoginOptions options, string[] scope)
         {
-            foreach (var serviceFactory in _fallbackChain)
-            {
-                var service = serviceFactory();
+            foreach (var serviceFactory in _fallbackChain) {
+                var service = serviceFactory ();
 
                 var scoped = service as ISupportScope;
                 if (scoped != null && scope != null)
                     scoped.Scopes = scope;
 
-                yield return new AccountProvider(service);
+                yield return new AccountProvider (service);
 
-                if (options.AllowLoginUI && service.SupportsAuthentication)
-                {
+                if (options.AllowLoginUI && service.SupportsAuthentication) {
                     if (options.Activity != null)
-                        yield return new AccountProvider(service, options.Activity);
+                        yield return new AccountProvider (service, options.Activity);
                 }
             }
         }
 #else
-        IEnumerable<AccountProvider> GetProviderChain(LoginOptions options, string[] scope)
+        IEnumerable<AccountProvider> GetProviderChain (LoginOptions options, string [] scope)
         {
-            throw new NotImplementedException("GetProviderChain not implemented on this platform.");
+            throw new NotImplementedException ("GetProviderChain is not implemented on this platform.");
         }
 #endif
 
@@ -184,7 +182,7 @@ namespace Stampsy.Social.Providers
                         return LoginProgress.PresentingAuthController;
 
                     if (UseSafari)
-                        return LoginProgress.PresentingSafari;
+                        return LoginProgress.PresentingBrowser;
 
                     return LoginProgress.Authorizing;
                 }
@@ -193,7 +191,7 @@ namespace Stampsy.Social.Providers
             public AccountProvider (Service service, Action<UIViewController, bool, NSAction> presentAuthController)
             {
                 if (!service.SupportsAuthentication)
-                    throw new NotSupportedException (string.Format ("{0} does not support authentication with a controller", service.Title));
+                    throw new NotSupportedException (string.Format ("{0} does not support authentication with a controller.", service.Title));
 
                 Service = service;
                 PresentAuthController = presentAuthController;
@@ -202,7 +200,7 @@ namespace Stampsy.Social.Providers
             public AccountProvider (Service service, bool useSafari)
             {
                 if (useSafari && !service.SupportsAuthentication)
-                    throw new NotSupportedException (string.Format ("{0} does not support authentication with Safari", service.Title));
+                    throw new NotSupportedException (string.Format ("{0} does not support authentication with Safari.", service.Title));
 
                 Service = service;
                 UseSafari = useSafari;
@@ -226,8 +224,7 @@ namespace Stampsy.Social.Providers
 
             public LoginProgress ProgressWhileAuthenticating
             {
-                get
-                {
+                get {
                     if (Activity != null)
                         return LoginProgress.PresentingAuthController;
 
@@ -235,44 +232,42 @@ namespace Stampsy.Social.Providers
                 }
             }
 
-            public AccountProvider(Service service, Activity activity)
+            public AccountProvider (Service service, Activity activity)
             {
                 if (!service.SupportsAuthentication)
-                    throw new NotSupportedException(string.Format("{0} does not support authentication with a controller", service.Title));
+                    throw new NotSupportedException (string.Format ("{0} does not support authentication with a controller.", service.Title));
 
                 Service = service;
                 Activity = activity;
             }
 
-            public AccountProvider(Service service)
+            public AccountProvider (Service service)
             {
                 Service = service;
             }
 
-            public Task<IEnumerable<Account>> GetAccounts()
+            public Task<IEnumerable<Account>> GetAccounts ()
             {
                 if (Activity != null)
-                    return Service.GetAccountsAsync(Activity);
-                
-                return Service.GetAccountsAsync();
+                    return Service.GetAccountsWithAuthUIAsync (Activity);
+
+                return Service.GetAccountsAsync (Activity);
             }
         }
 #else
-        private class AccountProvider
+        class AccountProvider
         {
             public Service Service { get; private set; }
 
-            public Task<IEnumerable<Account>> GetAccounts()
-            {
-                throw new NotImplementedException("GetAccounts not implemented on this platform.");
+            public LoginProgress ProgressWhileAuthenticating {
+                get {
+                    throw new NotImplementedException ("ProgressWhileAuthenticating is not implemented on this platform.");
+                }
             }
 
-            public LoginProgress ProgressWhileAuthenticating
+            public Task<IEnumerable<Account>> GetAccounts ()
             {
-                get
-                {
-                    throw new NotImplementedException("GetAccounts not implemented on this platform.");
-                }
+                throw new NotImplementedException ("GetAccounts is not implemented on this platform.");
             }
         }
 #endif

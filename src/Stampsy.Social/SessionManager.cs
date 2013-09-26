@@ -3,8 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stampsy.Social.Providers;
 using Service = Xamarin.Social.Service;
-
-
 #if PLATFORM_IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
@@ -119,8 +117,14 @@ namespace Stampsy.Social
 
             CloseSession ();
 
-            if (saveAccount && session.Service.SupportsSave)
+
+            if (saveAccount && session.Service.SupportsSave) {
+#if PLATFORM_ANDROID
+                session.Service.SaveAccount (session.Account, Application.Context);
+#else
                 session.Service.SaveAccount (session.Account);
+#endif
+            }
 
             GetSessionAsync (_ => Task.FromResult (session));
         }
@@ -135,7 +139,9 @@ namespace Stampsy.Social
                 _task = OpenSessionAsync (sessionFactory, _openSessionCts.Token);
                 OnStateChanged ();
 
-                _task.ContinueWith (t => OnStateChanged (), TaskScheduler.FromCurrentSynchronizationContext ());
+                _task.ContinueWith (t => {
+                    OnStateChanged ();
+                }, TaskScheduler.FromCurrentSynchronizationContext ());
             }
 
             return _task;
@@ -168,10 +174,15 @@ namespace Stampsy.Social
             }, null);
         }
 
+
         static void TryDeleteAccount (Session session)
         {
             try {
+#if PLATFORM_ANDROID
+                session.Service.DeleteAccount (session.Account, Application.Context);
+#else
                 session.Service.DeleteAccount (session.Account);
+#endif
             } catch {
                 // Account doesn't exist, or operation isn't supported by service
             }

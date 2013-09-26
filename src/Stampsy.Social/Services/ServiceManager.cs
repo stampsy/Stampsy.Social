@@ -7,7 +7,6 @@ using Newtonsoft.Json.Linq;
 using Xamarin.Auth;
 using Xamarin.Social;
 using Service = Xamarin.Social.Service;
-
 #if PLATFORM_ANDROID
 using Android.App;
 #endif
@@ -25,34 +24,25 @@ namespace Stampsy.Social
         }
 
 #if PLATFORM_ANDROID
-        public void DeleteStoredAccounts(Activity activity, string[] serviceIds = null)
-        {
-            serviceIds = serviceIds ?? KnownServiceIds;
-            var store = AccountStore.Create(activity);
-
-            foreach (var serviceId in serviceIds)
-            {
-                foreach (var account in store.FindAccountsForService(serviceId).ToList())
-                {
-                    store.Delete(account, serviceId);
-                }
-            }
-        }
+        public void DeleteStoredAccounts (Activity activity, string [] serviceIds = null)
 #else
-        public void DeleteStoredAccounts(string[] serviceIds = null)
+        public void DeleteStoredAccounts (string [] serviceIds = null)
+#endif
         {
             serviceIds = serviceIds ?? KnownServiceIds;
-            var store = AccountStore.Create();
 
-            foreach (var serviceId in serviceIds)
-            {
-                foreach (var account in store.FindAccountsForService(serviceId).ToList())
-                {
-                    store.Delete(account, serviceId);
+#if PLATFORM_ANDROID
+            var store = AccountStore.Create (activity);
+#else
+            var store = AccountStore.Create ();
+#endif
+
+            foreach (var serviceId in serviceIds) {
+                foreach (var account in store.FindAccountsForService (serviceId).ToList ()) {
+                    store.Delete (account, serviceId);
                 }
             }
         }
-#endif
 
         #region Public API
 
@@ -163,7 +153,6 @@ namespace Stampsy.Social
         {
             public NotModifiedException () : base ()
             {
-                
             }
         }
     }

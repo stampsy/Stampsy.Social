@@ -16,10 +16,10 @@ namespace Stampsy.Social
 #if PLATFORM_IOS
             UIApplication.EnsureUIThread ();
 #elif PLATFORM_ANDROID
-            if (Looper.MyLooper() != Looper.MainLooper)
-                throw new InvalidOperationException("Trying to run UI code from non-ui thread.");
+            if (Looper.MyLooper () != Looper.MainLooper)
+                throw new InvalidOperationException ("Trying to run UI code from non-ui thread.");
 #else
-
+            throw new NotImplementedException ("EnsureMainThread is not implemented on this platform.");
 #endif
         }
     }

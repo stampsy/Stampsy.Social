@@ -16,6 +16,7 @@ namespace Stampsy.Social
         public static readonly LoginOptions NoUI = new LoginOptions { AllowLoginUI = false };
 #if PLATFORM_IOS
         public static readonly LoginOptions WithUI = new LoginOptions { AllowLoginUI = true };
+        public Action<UIViewController, bool, NSAction> PresentAuthController { get; set; }
 
         public static LoginOptions WithUIAndChoice (
             IChoiceProvider<Account> accountChoiceProvider = null,
@@ -30,31 +31,21 @@ namespace Stampsy.Social
             };
         }
 #elif PLATFORM_ANDROID
+        public Action<Activity, Intent, bool, Action> PresentAuthController { get; set; }
         public Activity Activity;
 
-        public static LoginOptions WithUI(Activity activity)
+        public static LoginOptions WithUI (Activity activity)
         {
-            return new LoginOptions
-            {
+            return new LoginOptions {
                 AllowLoginUI = true,
                 Activity = activity
             };
         }
-            
-            //= new LoginOptions { AllowLoginUI = true };
 #endif
 
         public bool AllowLoginUI { get; set; }
         public IChoiceProvider<Account> AccountChoiceProvider { get; set; }
         public Action<LoginProgress> ReportProgress { get; set; }
-
-#if PLATFORM_IOS
-        public Action<UIViewController, bool, NSAction> PresentAuthController { get; set; }
-#elif PLATFORM_ANDROID
-        public Action<Activity, Intent, bool, Action> PresentAuthController { get; set; }
-#else
-
-#endif
 
         private LoginProgress? _lastProgress;
 
