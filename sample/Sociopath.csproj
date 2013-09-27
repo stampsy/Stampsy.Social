@@ -79,11 +79,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
-    <Reference Include="Newtonsoft.Json.MonoTouch">
-      <HintPath>..\libs\Newtonsoft.Json.MonoTouch.dll</HintPath>
-    </Reference>
     <Reference Include="SDWebImage">
       <HintPath>libs\SDWebImage.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\src\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -152,9 +152,9 @@
       <Project>{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}</Project>
       <Name>Xamarin.Social.iOS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\src\Stampsy.Social.csproj">
+    <ProjectReference Include="..\src\Stampsy.Social.iOS\Stampsy.Social.iOS.csproj">
       <Project>{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}</Project>
-      <Name>Stampsy.Social</Name>
+      <Name>Stampsy.Social.iOS</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
