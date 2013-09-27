@@ -3,6 +3,12 @@ Stampsy.Social
 
 A library on top of Xamarin.Auth and Xamarin.Social that provides native login with Safari fallback, and implements common APIs for Facebook, Twitter, Google and Dropbox.
 
+### Platforms
+
+* iOS (Social.framework, Safari and modal auth controllers)
+* Android (just modal auth controllers for now)
+* Ping me at dan.abramov@gmail.com if you'd like to port it to other platforms, e.g. WP8
+
 ### Dependencies
 
 * [Newtonsoft.Json](https://github.com/ayoung/Newtonsoft.Json/)
@@ -48,8 +54,9 @@ We're using this in production in Stampsy 1.5 (soon to appear in App Store).
 
 ### Features
 
-* Athentication with iOS 6 providers with fallback to Safari
-* Support for choosing native Twitter with an action sheet (see sample project)
+* Authentication with native iOS 6 providers with fallback to Safari on iOS
+* Authentication via a modal controller both on iOS and Android
+* Support for choosing native iOS Twitter account with an action sheet (see sample project)
 * Getting profile for Facebook, Twitter, Google+ and Dropbox
 * Getting access token from Facebook, Twitter ([Reverse Auth](https://dev.twitter.com/docs/ios/using-reverse-auth)) and Google+
 * Getting paginated friends for Facebook, Twitter and Google Plus
