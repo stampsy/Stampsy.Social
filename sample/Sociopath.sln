@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sociopath", "Sociopath.csproj", "{71577C6E-5C40-409B-BAC5-CFB97D2ABEF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stampsy.Social", "..\src\Stampsy.Social.csproj", "{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Auth.iOS", "..\libs\Xamarin.Social\Xamarin.Auth\src\Xamarin.Auth.iOS\Xamarin.Auth.iOS.csproj", "{9309BCCC-AA7B-4195-A130-D4572FA9488D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Social.iOS", "..\libs\Xamarin.Social\src\Xamarin.Social.iOS\Xamarin.Social.iOS.csproj", "{C91EF8FC-37E3-4952-A8A3-BA3A4422B0C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stampsy.Social.iOS", "..\src\Stampsy.Social.iOS\Stampsy.Social.iOS.csproj", "{13ADBE0B-E6A7-4E29-B0F0-9E12B870FBD3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
