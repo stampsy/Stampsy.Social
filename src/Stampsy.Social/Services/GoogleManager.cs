@@ -43,8 +43,7 @@ namespace Stampsy.Social.Services
                 options,
                 token,
                 new [] {
-                    UserinfoEmailScopeKey,
-                    PlusMeScopeKey
+                    PlusLoginScopeKey
                 }
             );
         }
