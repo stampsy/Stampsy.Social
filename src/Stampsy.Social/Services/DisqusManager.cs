@@ -26,12 +26,8 @@ namespace Stampsy.Social.Services
         {
         }
 
-        //public static readonly Uri BaseOAuthUri = new Uri ("https://www.googleapis.com/oauth2/v2/");
         public static readonly Uri BaseApiUri = new Uri ("https://disqus.com/api/oauth/2.0/");
 
-        //public const string UserinfoEmailScopeKey = "https://www.googleapis.com/auth/userinfo.email";
-        //public const string PlusMeScopeKey = "https://www.googleapis.com/auth/plus.me";
-        //public const string PlusLoginScopeKey = "https://www.googleapis.com/auth/plus.login";
         public const string ReadWriteScopeKey = "read,write";
 
         #region Public API
