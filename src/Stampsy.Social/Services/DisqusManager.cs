@@ -26,7 +26,7 @@ namespace Stampsy.Social.Services
         {
         }
 
-        public static readonly Uri BaseApiUri = new Uri ("https://disqus.com/api/oauth/2.0/");
+        public static readonly Uri BaseApiUri = new Uri ("https://disqus.com/api/3.0/");
 
         public const string ReadWriteScopeKey = "read,write";
 
