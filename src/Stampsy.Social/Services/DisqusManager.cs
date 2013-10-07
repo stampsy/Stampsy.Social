@@ -54,6 +54,15 @@ namespace Stampsy.Social.Services
             throw new NotImplementedException ();
         }
 
+        public Task<string> AddCommentAsync (string threadId, string message, LoginOptions options = default (LoginOptions), CancellationToken token = default (CancellationToken))
+        {
+            return this.WithSession (
+                () => AddComment (threadId, message, token),
+                options,
+                token
+            );
+        }
+
         #endregion
 
         #region Implementation
@@ -68,6 +77,19 @@ namespace Stampsy.Social.Services
             );
 
             return ParseAsync (request, ParseUser, token);
+        }
+
+        private Task<string> AddComment (string threadId, string message, CancellationToken token) 
+        {
+            var session = EnsureLoggedIn ();
+            var request = session.Service.CreateRequest (
+                "POST",
+                new Uri (BaseApiUri, "posts/create.json"),
+                new Dictionary<string, string> { { "thread", threadId }, { "message", message } },
+                session.Account
+            );
+
+            return request.GetResponseAsync (token).ContinueWith (task => task.Result.GetResponseText (), token);
         }
 
         #endregion
@@ -115,10 +137,7 @@ namespace Stampsy.Social.Services
                 Id = response.Value<string> ("id"),
                 Name = response.Value<string> ("name"),
                 Email = response.Value<string> ("email"),
-                //FirstName = response.Value<string> ("name"),
-                //LastName = response.Value<string> ("name", "familyName"),
                 ImageUrl = response.Value<string> ("avatar", "permalink"),
-                //Gender = ParseGender (response.Value<string> ("gender"), "female", "male")
             };
         }
     }
