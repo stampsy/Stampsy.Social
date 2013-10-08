@@ -72,8 +72,15 @@ namespace Stampsy.Social.Services
             );
         }
 
+        public Task<string> RemoveCommentAsync (string postId, LoginOptions options = default (LoginOptions), CancellationToken token = default (CancellationToken))
+        {
+            return this.WithSession (
+                () => RemoveComment (postId, token),
+                options,
+                token
+            );
+        }
         
-
         #endregion
 
         #region Implementation
@@ -111,6 +118,19 @@ namespace Stampsy.Social.Services
                 "POST",
                 new Uri (BaseApiUri, "posts/update.json"),
                 new Dictionary<string, string> { { "post", postId }, { "message", message } },
+                session.Account
+            );
+
+            return request.GetResponseAsync (token).ContinueWith (task => task.Result.GetResponseText (), token);
+        }
+
+        private Task<string> RemoveComment (string postId, CancellationToken token) {
+            var session = EnsureLoggedIn ();
+
+            var request = session.Service.CreateRequest (
+                "POST",
+                new Uri (BaseApiUri, "posts/remove.json"),
+                new Dictionary<string, string> { { "post", postId }},
                 session.Account
             );
 
