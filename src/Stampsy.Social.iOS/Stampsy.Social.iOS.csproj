@@ -75,6 +75,9 @@
     <Compile Include="..\Stampsy.Social\Providers\ISessionProvider.cs">
       <Link>Providers\ISessionProvider.cs</Link>
     </Compile>
+    <Compile Include="..\Stampsy.Social\Services\DisqusManager.cs">
+      <Link>Services\DisqusManager.cs</Link>
+    </Compile>
     <Compile Include="..\Stampsy.Social\Services\DropboxManager.cs">
       <Link>Services\DropboxManager.cs</Link>
     </Compile>
