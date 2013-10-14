@@ -103,10 +103,6 @@ namespace Stampsy.Social
                 HandleResponseException (responseTask.Exception.Flatten ().InnerException);
 
             var response = responseTask.Result;
-            if (response.StatusCode == System.Net.HttpStatusCode.NotModified) {
-                HandleResponseException (new NotModifiedException ());
-            }
-
             var text = response.GetResponseText ();
 
             JToken json;
@@ -148,13 +144,6 @@ namespace Stampsy.Social
         }
 
         #endregion
-
-        public class NotModifiedException : System.Net.WebException
-        {
-            public NotModifiedException () : base ()
-            {
-            }
-        }
     }
 }
 
