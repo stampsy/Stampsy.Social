@@ -154,7 +154,7 @@ namespace Stampsy.Social.Providers
                 if (scoped != null && scope != null)
                     scoped.Scopes = scope;
 
-                yield return new AccountProvider (service);
+                yield return new AccountProvider (service, options.Activity);
 
                 if (options.AllowLoginUI && service.SupportsAuthentication) {
                     if (options.Activity != null)
